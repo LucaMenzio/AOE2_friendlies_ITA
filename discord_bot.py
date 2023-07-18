@@ -79,5 +79,47 @@ async def create_team(ctx, player, n_games):
             message+="\t"+str(names[i][j])+" \t\t "+str(won)+"\n"
         await ctx.send(message+"```")
 
+'''        
+#---------------------------------------------------------------------
+@bot.command(name='get_match', help='checks whoever is in a certain lobby and balances the team with respect of their elo. The player name or the match lobby id should be provided as input')
+async def get_match(ctx, player):
+
+    matchid = -1
+    players = []
+    
+    if player.isnumeric():
+        await ctx.send("Finding the match by matchid")'
+        matchid = int(players)
+        players = rlk.findLiveMatch(matchid)
+    else:
+        await ctx.send("Hoping that "+player" is inside the lobby")
+        steam_id = Elo.get_steam_id(player)
+        if steam_id == -1:
+            await ctx.send("The specified player is not registered in the database")
+        #find matchid or something like this 
+        players = rlk.findLiveMatch(matchid)
+    
+    team = Elo.balance_teams(players) #this works only if everyone is registered in the database
+    message ="The best combination of players is " + str(team)
+    await ctx.send(message)
+'''
+
+'''        
+#---------------------------------------------------------------------
+@bot.command(name='update_elos', help='')
+async def update_elos(ctx, player):
+
+   # Make something happen here
+   
+#---------------------------------------------------------------------
+@bot.command(name='update_elos', help='')
+async def update_elos(ctx, player):
+
+   # Make something happen here
+
+   
+'''
+
+
 bot.run(TOKEN)
 
