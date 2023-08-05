@@ -1,0 +1,3 @@
+[submodule "librematch-rlink_client"]
+	path = librematch-rlink_client
+	url = https://github.com/librematch/librematch-rlink_client.git
