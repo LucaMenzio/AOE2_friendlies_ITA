@@ -2,6 +2,7 @@ import os
 import random
 
 from discord.ext import commands, tasks
+from discord.ext.commands import has_permission
 import discord
 from dotenv import load_dotenv
 
@@ -97,6 +98,34 @@ async def balance_lobby(ctx, lobby_id):
     message = "The most balanced sets of players are " + str(team)
     await ctx.send(message)
 
+#---------------------------------------------------------------------
+@bot.command(name='print_csv', help='Shows the database (csv) - for admin only')
+@has_permission(administrator=True)
+async def print_csv(ctx):
+    message = "Names\tDiscord Nick\tSteam ID\tElo 1v1\tElo tg"
+    for i in range(len(Elo.names)):
+        message += str(Elo.names[i]) + "\t" + str(Elo.discord_nick[i]) + "\t" + str(Elo.steam_id[i]) + "\t" + str(Elo.elo1v1[i]) + "\t" + str(Elo.elotg[i])
+    await ctx.send(message)
+
+#---------------------------------------------------------------------
+@bot.command(name='add_player', help='Adds a player to the database - e.g. !add_player "nickname" "steam id" "1v1 Elo" "tg Elo" ')
+async def add_player(ctx, name, steam_id, elo1v1, elotg):
+    
+    if(Elo.add_player(name,steam_id,elo1v1,elotg)):
+        await ctx.send("Player "+ name + " added successfully")
+    else:
+        await ctx.send("There was an issue adding the player, call Loris and Circe")
+        
+#---------------------------------------------------------------------
+@bot.command(name='delete_player', help='Deletes a player to the database - e.g. !delete_player "nickname" -  for admin only')
+@has_permission(administrator=True)
+async def add_player(ctx, name, steam_id, elo1v1, elotg):
+    
+    if(Elo.delete_player(name,steam_id,elo1v1,elotg)):
+        await ctx.send("Player "+ name + " deleted successfully")
+    else:
+        await ctx.send("There was an issue deleting the player, call Loris and Circe")
+    
 bot.run(TOKEN)
 
 '''

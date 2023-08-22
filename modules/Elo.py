@@ -114,10 +114,42 @@ class AOE2ItaliaElo:
     def compute_elo(self, elo_p1, elo_p2, won):
         p1 = 1.0 / (1.0 + np.power(10, (elo_p2 - elo_p1)/400) )
         return elo_p1 + K*(won - p1)
-            
-            
-    #updates the elos in the csv
-    # !!! to be called last !!!
+    
+    #allows to add a player to the database
+    def add_player(self, name, steam_id, elo_1v1, elo_tg):
+        if isinstance(name, str) and isinstance(steam_id, int) and isinstance(elo_1v1, int) and isinstance(elo_tg, int):
+            self.names.append(name)
+            self.discord_nick.append(name)
+            self.steam_id.append(steam_id)
+            self.elo1v1.append(elo_1v1)
+            self.elotg.append(elo_tg)
+        else:
+            print("some of the inputs where provided in the wrong format")
+            return -1
+        try:
+            self.update_csv()
+            return 1
+        except:
+            print("something went wrong with the csv update")
+            return -1
+    
+    #allows to add a player to the database
+    def delete_player(self, name):
+        j = 0
+        for i in range(len(self.names)):
+            if j == len(self.names):
+                break
+            if name == self.names[i]:
+                j += 1
+                continue
+            self.names[i] = self.names[j]
+            self.steam_id[i] = self.steam_id[j]
+            self.elo1v1[i] = self.elo1v1[j]
+            self.elotg[i] = self.elotg[j]
+            self.discord_nick[i] = self.discord_nick[j] 
+            j += 1
+    
+    #updates the csv
     def update_csv(self):
         with open(self.fileName,"w") as csvfile:
             csvfile.write(",Names,Discord Nick,Steam ID,Elo 1v1, Elo tg\n")
