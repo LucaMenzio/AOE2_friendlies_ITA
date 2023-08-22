@@ -20,7 +20,7 @@ class AOE2ItaliaElo:
         
         
         #getting all the info from the csv
-        self.fileName = "elo_aoe2italia_internal.csv"
+        self.fileName = "elo_aoe2italia_internal_updated_temp.csv"
         with open(self.fileName) as csvfile:
             csvReader = csv.reader(csvfile, delimiter=",")
             for i, row in enumerate(csvReader):
@@ -95,6 +95,13 @@ class AOE2ItaliaElo:
                     self.elo[i] = new_elo
                     return 1
             return -1
+        
+    #gets the player nickname given a certain steam id
+    def get_name(self, player_steam_id):
+        for i in range(len(self.names)):
+            if(self.steam_id == player_steam_id):
+                return self.names[i]
+        return -1
     
     #gets the steam id corresponding to a certain player name
     def get_steam_id(self, player_name):
@@ -115,4 +122,6 @@ class AOE2ItaliaElo:
         with open(self.fileName,"w") as csvfile:
             csvfile.write(",Names,Discord Nick,Steam ID,Elo 1v1, Elo tg\n")
             for i in range(len(self.names)):
-                csvfile.write(str(i)+","+self.names[i]+","+self.discord_names[i]+","+self.steam_ids[i]+","+str(self.elo1v1[i])+","+str(self.elotg[i])+"\n")
+                csvfile.write(str(i)+","+self.names[i]+","+self.discord_nick[i]+","+self.steam_id[i]+","+str(self.elo1v1[i])+","+str(self.elotg[i])+"\n")
+                
+    

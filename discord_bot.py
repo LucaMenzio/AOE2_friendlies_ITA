@@ -1,7 +1,7 @@
 import os
 import random
 
-from discord.ext import commands
+from discord.ext import commands, tasks
 import discord
 from dotenv import load_dotenv
 
@@ -10,13 +10,13 @@ from modules import *
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 
-
 intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
 Elo = Elo.AOE2ItaliaElo()    
-rlk = reliclink_API.relicAPI() 
+rlk = reliclink_API.relicAPI()
+
 
 message = "Please check if the bot command is used correctly"
 
@@ -45,7 +45,7 @@ async def create_team(ctx, player):
     await ctx.send(message)
 
 #---------------------------------------------------------------------
-@bot.command(name='create_team', help='Creates a balanced team given the players names (ex. !create_team "ITA | Born to be Brain" "OS | Piero" "ITA | Carma" "OS | Nessuno" )')
+@bot.command(name='create_team', help='Creates a balanced team given the players names (e.g. !create_team "ITA | Born to be Brain" "OS | Piero" "ITA | Carma" "OS | Nessuno" )')
 async def create_team(ctx, *players):
     if(len(players) %2 != 0):
         await ctx.send("Check the number of players, it is odd")
@@ -79,47 +79,33 @@ async def create_team(ctx, player, n_games):
             message+="\t"+str(names[i][j])+" \t\t "+str(won)+"\n"
         await ctx.send(message+"```")
 
-'''        
 #---------------------------------------------------------------------
-@bot.command(name='get_match', help='checks whoever is in a certain lobby and balances the team with respect of their elo. The player name or the match lobby id should be provided as input')
-async def get_match(ctx, player):
-
-    matchid = -1
-    players = []
-    
-    if player.isnumeric():
-        await ctx.send("Finding the match by matchid")'
-        matchid = int(players)
-        players = rlk.findLiveMatch(matchid)
-    else:
-        await ctx.send("Hoping that "+player" is inside the lobby")
-        steam_id = Elo.get_steam_id(player)
-        if steam_id == -1:
-            await ctx.send("The specified player is not registered in the database")
-        #find matchid or something like this 
-        players = rlk.findLiveMatch(matchid)
-    
-    team = Elo.balance_teams(players) #this works only if everyone is registered in the database
-    message ="The best combination of players is " + str(team)
+@bot.command(name='balance_lobby', help='Balances the teams in the specified lobby - e.g. !balance_lobby 254830248')
+async def balance_lobby(ctx, lobby_id):
+    names = []
+    steam_ids = rlk.findLobby_byID(lobby_id)
+    if steam_ids == -2:
+        await ctx.send("Error, lobby not found")
+    if(len(steam_ids) < 4 or len(steam_ids) %2 != 0):
+        await ctx.send("Check the number of players, it is odd or there are less than 3 players")
+    for j,id in enumerate(steam_ids):
+        if(Elo.get_name(id)):
+            await ctx.send("The " +str(j)+"-th player is not registered on the database. Please use the !balance_lobby_1v1elo command or add him/her to the database first")
+        names.append(Elo.get_name(id))
+        
+    team = Elo.balance_teams(names)
+    message = "The most balanced sets of players are " + str(team)
     await ctx.send(message)
-'''
-
-'''        
-#---------------------------------------------------------------------
-@bot.command(name='update_elos', help='')
-async def update_elos(ctx, player):
-
-   # Make something happen here
-   
-#---------------------------------------------------------------------
-@bot.command(name='update_elos', help='')
-async def update_elos(ctx, player):
-
-   # Make something happen here
-
-   
-'''
-
 
 bot.run(TOKEN)
 
+'''
+@bot.listen()
+async def on_ready():
+    task_loop.start()
+
+@tasks.loop(seconds=5.0)
+async def task_loop():
+    #TODO
+    pass
+'''
