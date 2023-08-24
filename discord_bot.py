@@ -2,7 +2,7 @@ import os
 import random
 
 from discord.ext import commands, tasks
-from discord.ext.commands import has_permission
+#from discord.ext.commands import has_permission
 import discord
 from dotenv import load_dotenv
 
@@ -81,7 +81,7 @@ async def create_team(ctx, player, n_games):
         await ctx.send(message+"```")
 
 #---------------------------------------------------------------------
-@bot.command(name='balance_lobby', help='Balances the teams in the specified lobby - e.g. !balance_lobby 254830248')
+@bot.command(name='balance_lobby', help='Balances the teams in the specified lobby employing the internal tg Elo - e.g. !balance_lobby 254830248')
 async def balance_lobby(ctx, lobby_id):
     names = []
     steam_ids = rlk.findLobby_byID(lobby_id)
@@ -94,18 +94,42 @@ async def balance_lobby(ctx, lobby_id):
             await ctx.send("The " +str(j)+"-th player is not registered on the database. Please use the !balance_lobby_1v1elo command or add him/her to the database first")
         names.append(Elo.get_name(id))
         
-    team = Elo.balance_teams(names)
+    team = Elo.balance_teams_internal(names)
     message = "The most balanced sets of players are " + str(team)
     await ctx.send(message)
 
 #---------------------------------------------------------------------
-@bot.command(name='print_csv', help='Shows the database (csv) - for admin only')
-@has_permission(administrator=True)
-async def print_csv(ctx):
-    message = "Names\tDiscord Nick\tSteam ID\tElo 1v1\tElo tg"
-    for i in range(len(Elo.names)):
-        message += str(Elo.names[i]) + "\t" + str(Elo.discord_nick[i]) + "\t" + str(Elo.steam_id[i]) + "\t" + str(Elo.elo1v1[i]) + "\t" + str(Elo.elotg[i])
+@bot.command(name='balance_lobby_1v1', help='Balances the teams in the specified lobby empoying the 1v1 RM Elo  - e.g. !balance_lobby 254830248')
+async def balance_lobby_by1v1(ctx, lobby_id):
+    elos = []
+    team_names = []
+    team_elos = []
+    steam_ids = rlk.findLobby_byID(lobby_id)
+    for id in steam_ids:
+        name, elos = rlk.getElos(id)
+        team_names.append(name)
+        team_elos.append(elos[1])
+    team = Elo.balance_teams(team_elos)
+    message = ""
+    for i in range(len(team_elos)):
+        message += name + "\t" + team[i] + "\n"
+    await ctx.send("The most balanced combination is:\n")
     await ctx.send(message)
+
+#---------------------------------------------------------------------
+@bot.command(name='print_csv', help='Shows the database (csv) - for admin only')
+@commands.has_permissions(administrator=True)
+async def print_csv(ctx):
+    message = ""
+    await ctx.send("Names\tDiscord Nick\tSteam ID\tElo 1v1\tElo tg")
+    for i in range(len(Elo.names)):
+        message += str(Elo.names[i]) + "\t" + str(Elo.discord_nick[i]) + "\t" + str(Elo.steam_id[i]) + "\t" + str(Elo.elo1v1[i]) + "\t" + str(Elo.elotg[i]) + "\n"
+        if i % 20 == 0:
+            await ctx.send(message)
+            message = ""
+        if i == len(Elo.names) -1:
+            await ctx.send(message)
+    
 
 #---------------------------------------------------------------------
 @bot.command(name='add_player', help='Adds a player to the database - e.g. !add_player "nickname" "steam id" "1v1 Elo" "tg Elo" ')
@@ -118,7 +142,7 @@ async def add_player(ctx, name, steam_id, elo1v1, elotg):
         
 #---------------------------------------------------------------------
 @bot.command(name='delete_player', help='Deletes a player to the database - e.g. !delete_player "nickname" -  for admin only')
-@has_permission(administrator=True)
+#@has_permission(administrator=True)
 async def add_player(ctx, name, steam_id, elo1v1, elotg):
     
     if(Elo.delete_player(name,steam_id,elo1v1,elotg)):

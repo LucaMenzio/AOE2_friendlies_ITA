@@ -48,14 +48,15 @@ class AOE2ItaliaElo:
         return -1
 
     #returns two teams balanced with respect of the sigle's tg elos
-    def balance_teams(self, team_names):
+    def balance_teams_internal(self, team_names):
+        difference = 1000
         team_elos = []
         team = [-1,-1,-1]
         
         #checks to avoid shenanigans
         if (len(team_names) % 2 != 0):
             print("Number of players is odd, check it and try again")
-            return team
+            return -1
         else:
             if(len(team_names) == 2):
                 print("No need for balancing here")
@@ -87,6 +88,30 @@ class AOE2ItaliaElo:
                 team = possible_combinations[good_i]
                 
                 return team
+    
+    #balances the teams by providing the elos only
+    def balance_teams(self, elos):
+        difference = 1000
+        team = [-1,-1,-1]
+        if (len(elos) % 2 != 0):
+            print("Number of players is odd, check it and try again")
+            return -1
+        if(len(elos) == 2):
+            print("No need for balancing")
+            return -2
+        team.clear()
+        n = len(elos)
+        sum_elo = np.sum(np.array(elos))
+        possible_combinations = list(combinations(range(n),int(n/2)))
+        for i in range(len(possible_combinations)):
+            sum = 0
+            for j in range(int(n/2)):
+                sum += elos[possible_combinations[i][j]]
+            if (difference > np.abs(sum - sum_elo/2) ):
+                good_i = i
+                difference = np.abs(sum - sum_elo/2)
+            team = possible_combinations(good_i)
+        return team
 
     #sets the elo
     def set_elo(self, player_name, new_elo):

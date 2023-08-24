@@ -107,7 +107,10 @@ class relicAPI:
                 #print(stats.get("rating"))
                 elos.append(stats.get("rating"))
                 a += 1
-            return elos #first one is RM 1v1 elo, second RM tg elo
+            for stats in resp_profile.get("statGroups"):
+                for i in stats.get("members"):
+                    name = i.get("alias")
+            return name, elos #first one is RM 1v1 elo, second RM tg elo
         except:
             return -1
     
