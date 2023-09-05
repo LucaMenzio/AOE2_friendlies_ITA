@@ -5,6 +5,15 @@ from discord.ext import commands
 import discord
 from dotenv import load_dotenv
 
+from pprint import pprint
+import rlink_client
+from rlink_client.apis.tags import default_api
+# Defining the host is optional and defaults to https://aoe-api.reliclink.com
+# See configuration.py for a list of all supported configuration parameters.
+rlink_configuration = rlink_client.Configuration(
+    host="https://aoe-api.reliclink.com"
+)
+
 from modules import *
 
 load_dotenv()
@@ -78,6 +87,19 @@ async def create_team(ctx, player, n_games):
             won = 'Won' if results[i][j] == 1 else 'Lost'
             message+="\t"+str(names[i][j])+" \t\t "+str(won)+"\n"
         await ctx.send(message+"```")
+
+@bot.command(name='get_recent_matches', help='calls reliclink api to get the recent matches of a player')
+async def get_recent_matches(ctx, profile_id):
+    with rlink_client.ApiClient(rlink_configuration) as api_client:
+        api_instance = default_api.DefaultApi(api_client)
+        title = 'age2'
+        try:
+            query_params = {'title': title, 'profile_ids': '[' + str(profile_id) + ']'}
+            api_response = api_instance.community_get_recent_match_history(query_params=query_params)
+            pprint(api_response)
+            await ctx.send(str(list(api_response.body['matchHistoryStats'])[0]['id']))
+        except rlink_client.ApiException as e:
+            print("Exception when calling DefaultApi->community_get_recent_match_history: %s\n" % e)
 
 bot.run(TOKEN)
 
