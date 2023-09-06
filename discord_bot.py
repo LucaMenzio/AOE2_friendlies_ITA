@@ -4,18 +4,31 @@ import random
 from discord.ext import commands, tasks
 #from discord.ext.commands import has_permission
 import discord
-from dotenv import load_dotenv
 
+from dotenv import load_dotenv
+load_dotenv()
+
+from pprint import pprint
+import rlink_client
+from rlink_client.apis.tags import default_api
+# Defining the host is optional and defaults to https://aoe-api.reliclink.com
+# See configuration.py for a list of all supported configuration parameters.
+rlink_configuration = rlink_client.Configuration(
+    host="https://aoe-api.reliclink.com"
+)
+
+from models.db import db
+from models.User import User
 from modules import *
 
-load_dotenv()
+
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
-Elo = Elo.AOE2ItaliaElo()    
+Elo = Elo.AOE2ItaliaElo()
 rlk = reliclink_API.relicAPI()
 
 
@@ -79,6 +92,29 @@ async def create_team(ctx, player, n_games):
             won = 'Won' if results[i][j] == 1 else 'Lost'
             message+="\t"+str(names[i][j])+" \t\t "+str(won)+"\n"
         await ctx.send(message+"```")
+
+
+@bot.command(name='get_users', help='retrieves all the users from the database')
+async def get_users(ctx):
+    db.connect()
+    users = User.select()
+    for user in users:
+        print(f'{user.name} {user.discord_id} {user.profile_id} {user.steam_id}')
+    db.close()
+
+
+@bot.command(name='get_recent_matches', help='calls reliclink api to get the recent matches of a player')
+async def get_recent_matches(ctx, profile_id):
+    with rlink_client.ApiClient(rlink_configuration) as api_client:
+        api_instance = default_api.DefaultApi(api_client)
+        title = 'age2'
+        try:
+            query_params = {'title': title, 'profile_ids': '[' + str(profile_id) + ']'}
+            api_response = api_instance.community_get_recent_match_history(query_params=query_params)
+            pprint(api_response)
+            await ctx.send(str(list(api_response.body['matchHistoryStats'])[0]['id']))
+        except rlink_client.ApiException as e:
+            print("Exception when calling DefaultApi->community_get_recent_match_history: %s\n" % e)
 
 #---------------------------------------------------------------------
 @bot.command(name='balance_lobby', help='Balances the teams in the specified lobby employing the internal tg Elo - e.g. !balance_lobby 254830248')
@@ -149,7 +185,7 @@ async def add_player(ctx, name, steam_id, elo1v1, elotg):
         await ctx.send("Player "+ name + " deleted successfully")
     else:
         await ctx.send("There was an issue deleting the player, call Loris and Circe")
-    
+
 bot.run(TOKEN)
 
 '''
