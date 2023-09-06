@@ -4,7 +4,9 @@ import random
 from discord.ext import commands, tasks
 #from discord.ext.commands import has_permission
 import discord
+
 from dotenv import load_dotenv
+load_dotenv()
 
 from pprint import pprint
 import rlink_client
@@ -15,16 +17,18 @@ rlink_configuration = rlink_client.Configuration(
     host="https://aoe-api.reliclink.com"
 )
 
+from models.db import db
+from models.User import User
 from modules import *
 
-load_dotenv()
+
 TOKEN = os.getenv('DISCORD_TOKEN')
 
 intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
-Elo = Elo.AOE2ItaliaElo()    
+Elo = Elo.AOE2ItaliaElo()
 rlk = reliclink_API.relicAPI()
 
 
@@ -88,6 +92,15 @@ async def create_team(ctx, player, n_games):
             won = 'Won' if results[i][j] == 1 else 'Lost'
             message+="\t"+str(names[i][j])+" \t\t "+str(won)+"\n"
         await ctx.send(message+"```")
+
+
+@bot.command(name='get_users', help='retrieves all the users from the database')
+async def get_users(ctx):
+    db.connect()
+    users = User.select()
+    for user in users:
+        print(f'{user.name} {user.discord_id} {user.profile_id} {user.steam_id}')
+    db.close()
 
 
 @bot.command(name='get_recent_matches', help='calls reliclink api to get the recent matches of a player')
