@@ -6,8 +6,7 @@ class User(BaseModel):
     class Meta:
         table_name = 'users'
 
+    id = IntegerField(primary_key=True)
     name = CharField()
-    profile_id = IntegerField()
-    steam_id = CharField()
-    discord_id = IntegerField(primary_key=True)
+
 
