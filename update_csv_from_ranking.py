@@ -19,7 +19,7 @@ with open("elo_aoe2italia_internal_updated_temp.csv", "w") as csvfile:
            
         if flag:
             print(elos)
-            csvfile.write(str(i)+","+a.names[i]+","+a.discord_nick[i]+","+str(a.steam_id[i])+","+str(elos[0])+","+str(elos[1])+"\n")
+            csvfile.write(str(i)+","+a.names[i]+","+a.discord_nick[i]+","+str(a.steam_id[i])+","+str(elos[1])+","+str(elos[0])+"\n")
         else:
             csvfile.write(str(i)+","+a.names[i]+","+a.discord_nick[i]+","+str(a.steam_id[i])+","+str(a.elo1v1[i])+","+str(a.elotg[i])+"\n")
             print("there was an issue with player "+a.names[i])

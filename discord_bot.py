@@ -15,7 +15,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
-Elo = Elo.AOE2ItaliaElo()    
+Elo = Elo_csv.AOE2ItaliaElo("files/elo_aoe2italia_internal_updated_temp.csv")    
 rlk = reliclink_API.relicAPI()
 
 
@@ -48,11 +48,20 @@ async def create_team(ctx, player):
 #---------------------------------------------------------------------
 @bot.command(name='create_team', help='Creates a balanced team given the players names (e.g. !create_team "ITA | Born to be Brain" "OS | Piero" "ITA | Carma" "OS | Nessuno" )')
 async def create_team(ctx, *players):
-    if(len(players) %2 != 0):
+    if(len(players) % 2 != 0):
         await ctx.send("Check the number of players, it is odd")
-        
-    team = Elo.balance_teams(players)
-    message ="The best combination of players is " + str(team)
+    
+    team = Elo.balance_teams_internal(players)
+    message ="The best combination of players is \n" 
+    for i, player in enumerate(players):
+        flag = False
+        for ctrl in team:
+            if ctrl == i: 
+                flag = True
+        if flag:
+            message += "Team 0 \t " + player + " \n"
+        else:
+            message += "Team 1 \t " + player + "\n"
     await ctx.send(message)
     
 #---------------------------------------------------------------------
@@ -95,8 +104,14 @@ async def balance_lobby(ctx, lobby_id):
         names.append(Elo.get_name(id))
         
     team = Elo.balance_teams_internal(names)
-    message = "The most balanced sets of players are " + str(team)
-    await ctx.send(message)
+    if isinstance(team, int):
+        await ctx.send("the lobby does not contain the right amount of players")
+    else:
+        message = ""
+        for i in range(len(names)):
+            message += names[i] + "\t" + team[i] + "\n"
+        await ctx.send("The most balanced combination is:\n")
+        await ctx.send(message)
 
 #---------------------------------------------------------------------
 @bot.command(name='balance_lobby_1v1', help='Balances the teams in the specified lobby empoying the 1v1 RM Elo  - e.g. !balance_lobby 254830248')
@@ -105,16 +120,24 @@ async def balance_lobby_by1v1(ctx, lobby_id):
     team_names = []
     team_elos = []
     steam_ids = rlk.findLobby_byID(lobby_id)
-    for id in steam_ids:
-        name, elos = rlk.getElos(id)
-        team_names.append(name)
-        team_elos.append(elos[1])
-    team = Elo.balance_teams(team_elos)
-    message = ""
-    for i in range(len(team_elos)):
-        message += name + "\t" + team[i] + "\n"
-    await ctx.send("The most balanced combination is:\n")
-    await ctx.send(message)
+    print(steam_ids)
+    if isinstance(steam_ids, int):
+        if steam_ids == -2: await ctx.send("The number of players must be greater than 3 and even")
+        else: await ctx.send("Could not find the specified lobby")
+    else:
+        for id in steam_ids:
+            name, elos = rlk.getElos(id)
+            team_names.append(name)
+            team_elos.append(elos[1])
+        team = Elo.balance_teams(team_elos)
+        if isinstance(team, int):
+            await ctx.send("the lobby does not contain the right amount of players")
+        else:
+            message = ""
+            for i in range(len(team_elos)):
+                message += team_names[i] + "\t" + team[i] + "\n"
+            await ctx.send("The most balanced combination is:\n")
+            await ctx.send(message)
 
 #---------------------------------------------------------------------
 @bot.command(name='print_csv', help='Shows the database (csv) - for admin only')
@@ -132,13 +155,14 @@ async def print_csv(ctx):
     
 
 #---------------------------------------------------------------------
-@bot.command(name='add_player', help='Adds a player to the database - e.g. !add_player "nickname" "steam id" "1v1 Elo" "tg Elo" ')
+@bot.command(name='add_player', help='Adds a player to the database - e.g. !add_player "Mozzo Infame" "12345666" 800 921 ')
 async def add_player(ctx, name, steam_id, elo1v1, elotg):
-    
-    if(Elo.add_player(name,steam_id,elo1v1,elotg)):
-        await ctx.send("Player "+ name + " added successfully")
+    flag = Elo.add_player(name=name, steam_id=steam_id, elo_1v1=elo1v1, elo_tg=elotg)
+    if(flag):
+        Elo.update_csv()
+        await ctx.send("Player " + name + " added successfully")
     else:
-        await ctx.send("There was an issue adding the player, call Loris and Circe")
+        await ctx.send("There was an issue adding the player, call Loris and Circe (and check the data format)")
         
 #---------------------------------------------------------------------
 @bot.command(name='delete_player', help='Deletes a player to the database - e.g. !delete_player "nickname" -  for admin only')
@@ -149,7 +173,13 @@ async def add_player(ctx, name, steam_id, elo1v1, elotg):
         await ctx.send("Player "+ name + " deleted successfully")
     else:
         await ctx.send("There was an issue deleting the player, call Loris and Circe")
-    
+  
+#---------------------------------------------------------------------
+@bot.command(name='get_elosRM', help='Gets current elos in RM')
+#@has_permission(administrator=True)
+async def get_elosRM(ctx, name):
+    await ctx.send(rlk.getElos(Elo.get_steam_id(name)))    
+      
 bot.run(TOKEN)
 
 '''
@@ -157,8 +187,59 @@ bot.run(TOKEN)
 async def on_ready():
     task_loop.start()
 
-@tasks.loop(seconds=5.0)
-async def task_loop():
-    #TODO
+
+@tasks.loop(seconds=4*3600) #four hours seems reasonable
+async def auto_update_database():
+
+    n_games = 10 #to be proportioned with the time inserted above 
+    search_string = "dito"
+    
+    #loops over all the players in the database and looks for games 
+    #TODO is missing a check on the smurfs, if not all the players are in the database
+    for k in range(len(Elo.steam_id)):
+    
+        steam_id, names, results, gametime = rlk.getMatches_dito(Elo.steam_id[k],n_games,search_string)
+        a = 0
+    
+        #loops on all the games found 
+        for i in range(len(steam_id)):
+            if i == 0:
+                continue
+            if(Elo.all_player_registered(steam_id[i])):
+                print("Not all the players are present in the database, please add them for this game to be considered")
+                continue
+            if (Elo.check_game(timestamp=gametime[i-1])):
+                print("game already in the database")
+                continue
+            Elo.add_game(gametime[i]) #adds the game timestamp to the timestamps file
+            
+            elos = []
+            won = []
+            steam_ids = []
+            
+            if(len(steam_id[i]) == 2):
+                for j in range(len(steam_id[i])):
+                    print(names[i][j] + " " + str(Elo.get_elo1v1_byId(steam_id[i][j])) + " " + str(results[i][j]))
+                    elos.append(Elo.get_elo1v1_byId(steam_id[i][j]))
+                    won.append(results[i][j])
+                Elo.update_elo(steam_id[i][0], True, int(Elo.compute_elo(int(elos[0]), int(elos[1]), int(won[0]))))
+                Elo.update_elo(steam_id[i][1], True, int(Elo.compute_elo(int(elos[1]), int(elos[0]), int(won[1]))))
+            else:
+                mean_elo_team1 = 0
+                mean_elo_team2 = 0
+                for j in range(len(steam_id[i])):
+                    elos.append(Elo.get_elo1v1_byId(steam_id[i][j]))
+                    won.append(results[i][j])
+                    steam_ids.append(steam_id[i][j])
+                    if results[i][j]:
+                        mean_elo_team1 += Elo.get_elotg_byId(steam_id[i][j])
+                    else:
+                        mean_elo_team2 += Elo.get_elotg_byId(steam_id[i][j])
+                for j in range(len(elos)):
+                    if won[j]:
+                        Elo.update_elo(steam_ids[j]), False, int(Elo.compute_elo(int(elos[j]), mean_elo_team2, int(won[j])))
+                    else:
+                        Elo.update_elo(steam_ids[j]), False, int(Elo.compute_elo(int(elos[j]), mean_elo_team1, int(won[j])))
+    
     pass
 '''

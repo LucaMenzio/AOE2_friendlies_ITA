@@ -10,7 +10,7 @@ K = 30.
 
 class AOE2ItaliaElo:
     
-    def __init__(self):
+    def __init__(self, fileName):
         
         self.names = []
         self.discord_nick = []
@@ -20,7 +20,7 @@ class AOE2ItaliaElo:
         
         
         #getting all the info from the csv
-        self.fileName = "elo_aoe2italia_internal_updated_temp.csv"
+        self.fileName = fileName
         with open(self.fileName) as csvfile:
             csvReader = csv.reader(csvfile, delimiter=",")
             for i, row in enumerate(csvReader):
@@ -39,12 +39,25 @@ class AOE2ItaliaElo:
                 return self.elo1v1[i]
         return -1
     
+    #returns the 1v1 elo for a given player steam id 
+    def get_elo1v1_byId(self, player_steam_id):
+        for i, id in enumerate(self.steam_id):
+            if(id == player_steam_id):
+                return self.elo1v1[i]
+        return -1
+    
     #returns the tg elo for a given player name         
     def get_elotg(self, player_name):
-
         for i, name in enumerate(self.names):
             if(name == player_name):
                 return self.elotg[i]        
+        return -1
+
+    #returns the tg elo for a given player name         
+    def get_elotg_byId(self, player_steam_id):
+        for i, id in enumerate(self.steam_id):
+            if(id == player_steam_id):
+                return self.elotg[i]
         return -1
 
     #returns two teams balanced with respect of the sigle's tg elos
@@ -75,6 +88,7 @@ class AOE2ItaliaElo:
                 #starting actual team balancing
                 team.clear()        
                 n = len(team_names)
+                team_elos = [int(elo) for elo in team_elos]
                 sum_elo = np.sum(np.array(team_elos))
                 possible_combinations = list(combinations(range(n),int(n/2)))
                 for i in range(len(possible_combinations)):
@@ -101,6 +115,7 @@ class AOE2ItaliaElo:
             return -2
         team.clear()
         n = len(elos)
+        print(elos)
         sum_elo = np.sum(np.array(elos))
         possible_combinations = list(combinations(range(n),int(n/2)))
         for i in range(len(possible_combinations)):
@@ -140,9 +155,21 @@ class AOE2ItaliaElo:
         p1 = 1.0 / (1.0 + np.power(10, (elo_p2 - elo_p1)/400) )
         return elo_p1 + K*(won - p1)
     
+    #updates the elo of the specified player (by steam_id)
+    def update_elo(self, steam_id, is_1v1, new_elo):
+        for i in range(len(self.names)):
+            if self.steam_id[i] == steam_id:
+                if is_1v1:
+                    print("updated 1v1 elo, new elo is " + str(new_elo))
+                    self.elo1v1[i] = new_elo
+                else:
+                    self.elotg[i] = new_elo
+        #TOTEST
+        
+    
     #allows to add a player to the database
     def add_player(self, name, steam_id, elo_1v1, elo_tg):
-        if isinstance(name, str) and isinstance(steam_id, int) and isinstance(elo_1v1, int) and isinstance(elo_tg, int):
+        if isinstance(name, str) and isinstance(steam_id, str) and isinstance(elo_1v1, int) and isinstance(elo_tg, int):
             self.names.append(name)
             self.discord_nick.append(name)
             self.steam_id.append(steam_id)
@@ -150,12 +177,6 @@ class AOE2ItaliaElo:
             self.elotg.append(elo_tg)
         else:
             print("some of the inputs where provided in the wrong format")
-            return -1
-        try:
-            self.update_csv()
-            return 1
-        except:
-            print("something went wrong with the csv update")
             return -1
     
     #allows to add a player to the database
@@ -174,11 +195,12 @@ class AOE2ItaliaElo:
             self.discord_nick[i] = self.discord_nick[j] 
             j += 1
     
-    #updates the csv
+    
+    #updates the csv with data previously saved
     def update_csv(self):
         with open(self.fileName,"w") as csvfile:
             csvfile.write(",Names,Discord Nick,Steam ID,Elo 1v1, Elo tg\n")
             for i in range(len(self.names)):
                 csvfile.write(str(i)+","+self.names[i]+","+self.discord_nick[i]+","+self.steam_id[i]+","+str(self.elo1v1[i])+","+str(self.elotg[i])+"\n")
-                
+        print("Database Updated successfully")       
     
