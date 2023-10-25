@@ -188,58 +188,59 @@ async def on_ready():
     task_loop.start()
 
 
-@tasks.loop(seconds=4*3600) #four hours seems reasonable
+@tasks.loop(seconds=4*3600)  # Four hours seems reasonable
 async def auto_update_database():
 
-    n_games = 10 #to be proportioned with the time inserted above 
+    n_games = 10  # To be proportioned with the time inserted above
     search_string = "dito"
-    
-    #loops over all the players in the database and looks for games 
-    #TODO is missing a check on the smurfs, if not all the players are in the database
+
+    # Loops over all the players in the database and looks for games
     for k in range(len(Elo.steam_id)):
-    
-        steam_id, names, results, gametime = rlk.getMatches_dito(Elo.steam_id[k],n_games,search_string)
-        a = 0
-    
-        #loops on all the games found 
+
+        steam_id, names, results, gametime = rlk.getMatches_dito(Elo.steam_id[k], n_games, search_string)
+
+        # Loops on all the games found
         for i in range(len(steam_id)):
             if i == 0:
                 continue
-            if(Elo.all_player_registered(steam_id[i])):
-                print("Not all the players are present in the database, please add them for this game to be considered")
-                continue
-            if (Elo.check_game(timestamp=gametime[i-1])):
-                print("game already in the database")
-                continue
-            Elo.add_game(gametime[i]) #adds the game timestamp to the timestamps file
-            
-            elos = []
-            won = []
-            steam_ids = []
-            
-            if(len(steam_id[i]) == 2):
-                for j in range(len(steam_id[i])):
-                    print(names[i][j] + " " + str(Elo.get_elo1v1_byId(steam_id[i][j])) + " " + str(results[i][j]))
-                    elos.append(Elo.get_elo1v1_byId(steam_id[i][j]))
-                    won.append(results[i][j])
-                Elo.update_elo(steam_id[i][0], True, int(Elo.compute_elo(int(elos[0]), int(elos[1]), int(won[0]))))
-                Elo.update_elo(steam_id[i][1], True, int(Elo.compute_elo(int(elos[1]), int(elos[0]), int(won[1]))))
+
+            # Check if all players are registered in the database
+            if all(player_id in Elo.steam_id for player_id in steam_id[i]):
+                if Elo.check_game(timestamp=gametime[i-1]):
+                    print("Game already in the database")
+                    continue
+                Elo.add_game(gametime[i])  # Adds the game timestamp to the timestamps file
+
+                elos = []
+                won = []
+                steam_ids = []
+
+                if len(steam_id[i]) == 2:
+                    for j in range(len(steam_id[i])):
+                        print(names[i][j] + " " + str(Elo.get_elo1v1_byId(steam_id[i][j])) + " " + str(results[i][j]))
+                        elos.append(Elo.get_elo1v1_byId(steam_id[i][j]))
+                        won.append(results[i][j])
+                    Elo.update_elo(steam_id[i][0], True, int(Elo.compute_elo(int(elos[0]), int(elos[1]), int(won[0])))
+                    Elo.update_elo(steam_id[i][1], True, int(Elo.compute_elo(int(elos[1]), int(elos[0]), int(won[1])))
+                else:
+                    mean_elo_team1 = 0
+                    mean_elo_team2 = 0
+                    for j in range(len(steam_id[i])):
+                        elos.append(Elo.get_elo1v1_byId(steam_id[i][j]))
+                        won.append(results[i][j])
+                        steam_ids.append(steam_id[i][j])
+                        if results[i][j]:
+                            mean_elo_team1 += Elo.get_elotg_byId(steam_id[i][j])
+                        else:
+                            mean_elo_team2 += Elo.get_elotg_byId(steam_id[i][j])
+                    for j in range(len(elos)):
+                        if won[j]:
+                            Elo.update_elo(steam_ids[j], False, int(Elo.compute_elo(int(elos[j]), mean_elo_team2, int(won[j])))
+                        else:
+                            Elo.update_elo(steam_ids[j], False, int(Elo.compute_elo(int(elos[j]), mean_elo_team1, int(won[j])))
+
             else:
-                mean_elo_team1 = 0
-                mean_elo_team2 = 0
-                for j in range(len(steam_id[i])):
-                    elos.append(Elo.get_elo1v1_byId(steam_id[i][j]))
-                    won.append(results[i][j])
-                    steam_ids.append(steam_id[i][j])
-                    if results[i][j]:
-                        mean_elo_team1 += Elo.get_elotg_byId(steam_id[i][j])
-                    else:
-                        mean_elo_team2 += Elo.get_elotg_byId(steam_id[i][j])
-                for j in range(len(elos)):
-                    if won[j]:
-                        Elo.update_elo(steam_ids[j]), False, int(Elo.compute_elo(int(elos[j]), mean_elo_team2, int(won[j])))
-                    else:
-                        Elo.update_elo(steam_ids[j]), False, int(Elo.compute_elo(int(elos[j]), mean_elo_team1, int(won[j])))
-    
+                print("Non tutti i giocatori sono registrati nel database. Il gioco non è stato aggiunto.")
+
     pass
 '''
