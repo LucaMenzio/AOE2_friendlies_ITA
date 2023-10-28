@@ -1,7 +1,6 @@
 import numpy as np
 import csv
 
-from requests import get as GET
 from itertools import combinations
 
 
@@ -17,6 +16,8 @@ class AOE2ItaliaElo:
         self.steam_id = []
         self.elo1v1 = []
         self.elotg = []
+        
+        self.fileName_timestamps = "files/game_timestamps.csv"
         
         
         #getting all the info from the csv
@@ -152,7 +153,7 @@ class AOE2ItaliaElo:
     
     #computes the new elo of p1, assuming constant K 
     def compute_elo(self, elo_p1, elo_p2, won):
-        p1 = 1.0 / (1.0 + np.power(10, (elo_p2 - elo_p1)/400) )
+        p1 = 1.0 / (1.0 + np.power(10, (elo_p2 - elo_p1)/400))
         return elo_p1 + K*(won - p1)
     
     #updates the elo of the specified player (by steam_id)
@@ -178,6 +179,7 @@ class AOE2ItaliaElo:
         else:
             print("some of the inputs where provided in the wrong format")
             return -1
+        print(self.names)
     
     #allows to add a player to the database
     def delete_player(self, name):
@@ -195,11 +197,39 @@ class AOE2ItaliaElo:
             self.discord_nick[i] = self.discord_nick[j] 
             j += 1
     
+    
     #updates the csv with data previously saved
     def update_csv(self):
         with open(self.fileName,"w") as csvfile:
             csvfile.write(",Names,Discord Nick,Steam ID,Elo 1v1, Elo tg\n")
             for i in range(len(self.names)):
                 csvfile.write(str(i)+","+self.names[i]+","+self.discord_nick[i]+","+self.steam_id[i]+","+str(self.elo1v1[i])+","+str(self.elotg[i])+"\n")
-        print("Database Updated successfully")       
+                #print(str(i)+","+self.names[i]+","+self.discord_nick[i]+","+self.steam_id[i]+","+str(self.elo1v1[i])+","+str(self.elotg[i])+"\n")
     
+    #adds games to the file containing all the gametimes
+    def add_game(self, timestamp):
+        with open(self.fileName_timestamps,"a") as timefile:
+            timefile.write(str(timestamp)+"\n")
+    
+    #checks if a timestamp is already present in the file
+    def check_game(self, timestamp):
+        timefile = open(self.fileName_timestamps, "r")
+        lines = timefile.readlines()
+        for line in lines:
+            if str(timestamp) in line:
+                return True
+        return False
+    
+    def all_players_registered(self,steam_id):
+        count = 0
+        for id in steam_id:
+            for i in range(len(self.steam_id)):
+                if id == self.steam_id[i]:
+                    count += 1
+        if count == len(steam_id):
+            return True
+        else:
+            return False
+                
+    
+            

@@ -21,16 +21,6 @@ rlk = reliclink_API.relicAPI()
 
 message = "Please check if the bot command is used correctly"
 
-# first attempt to make a bot command, found online
-@bot.command(name='roll_dice', help='Simulates rolling dice. Wants the number of the dice and its sides as arguments')
-async def roll(ctx, number_of_dice, number_of_sides):
-    dice = [
-        str(random.choice(range(1, int(number_of_sides) + 1)))
-        for _ in range(int(number_of_dice))
-    ]
-    await ctx.send(', '.join(dice))
-#---------------------------------------------------------------------
-
 #---------------------------------------------------------------------
 @bot.command(name='elo1v1', help='Retrieves the 1v1 elo of the specified player name (please use "")')
 async def create_team(ctx, player):
@@ -156,6 +146,7 @@ async def print_csv(ctx):
 
 #---------------------------------------------------------------------
 @bot.command(name='add_player', help='Adds a player to the database - e.g. !add_player "Mozzo Infame" "12345666" 800 921 ')
+#@has_permission(administrator=True)
 async def add_player(ctx, name, steam_id, elo1v1, elotg):
     flag = Elo.add_player(name=name, steam_id=steam_id, elo_1v1=elo1v1, elo_tg=elotg)
     if(flag):
@@ -183,6 +174,7 @@ async def get_elosRM(ctx, name):
 bot.run(TOKEN)
 
 '''
+#TODO
 @bot.listen()
 async def on_ready():
     task_loop.start()
@@ -208,7 +200,7 @@ async def auto_update_database():
             if(Elo.all_player_registered(steam_id[i])):
                 print("Not all the players are present in the database, please add them for this game to be considered")
                 continue
-            if (Elo.check_game(timestamp=gametime[i-1])):
+            if(Elo.check_game(timestamp=gametime[i-1])):
                 print("game already in the database")
                 continue
             Elo.add_game(gametime[i]) #adds the game timestamp to the timestamps file

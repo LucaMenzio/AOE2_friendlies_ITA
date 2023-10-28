@@ -48,6 +48,8 @@ class relicAPI:
                 return self.steam_id, self.names, self.results
         return -1
     
+    
+    #TODO
     def getMatches_dito(self, in_steam_id, n_matches, search_string):
         
         a = 0
