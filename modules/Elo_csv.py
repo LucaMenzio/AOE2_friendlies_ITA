@@ -1,217 +1,181 @@
 import numpy as np
 import csv
+import pandas as pd
 
 from itertools import combinations
+from typing import Union
+from modules.constants import NAME, NICK, ID, ELO, ELO_TG
 
+# constant for elo calculation
+K = 30.0
 
-#constant for elo calculation
-K = 30.
 
 class AOE2ItaliaElo:
-    
-    def __init__(self, fileName):
-        
-        self.names = []
-        self.discord_nick = []
-        self.steam_id = []
-        self.elo1v1 = []
-        self.elotg = []
-        
+    """Main class to read, write and update the csv file containing ELOs of all players"""
+    def __init__(self, file_name: str):
+        self.fileName = file_name
         self.fileName_timestamps = "files/game_timestamps.csv"
         
-        
-        #getting all the info from the csv
-        self.fileName = fileName
-        with open(self.fileName) as csvfile:
-            csvReader = csv.reader(csvfile, delimiter=",")
-            for i, row in enumerate(csvReader):
-                if i != 0:
-                    self.names.append(row[1])
-                    self.discord_nick.append(row[2])
-                    self.steam_id.append(row[3])
-                    self.elo1v1.append(row[4])
-                    self.elotg.append(row[5])
-                    
-    
-    #returns the 1v1 elo for a given player name 
-    def get_elo1v1(self, player_name):
-        for i, name in enumerate(self.names):
-            if(name == player_name):
-                return self.elo1v1[i]
-        return -1
-    
-    #returns the 1v1 elo for a given player steam id 
-    def get_elo1v1_byId(self, player_steam_id):
-        for i, id in enumerate(self.steam_id):
-            if(id == player_steam_id):
-                return self.elo1v1[i]
-        return -1
-    
-    #returns the tg elo for a given player name         
-    def get_elotg(self, player_name):
-        for i, name in enumerate(self.names):
-            if(name == player_name):
-                return self.elotg[i]        
-        return -1
+        # getting all the info from the csv
+        self.df = pd.read_csv(self.fileName, index_col=0)
+        self.df[[ID, ELO, ELO_TG]] = self.df[[ID, ELO, ELO_TG]].astype("Int64")
+        self.df_timestamps = pd.read_csv(self.fileName_timestamps, index_col=0)
 
-    #returns the tg elo for a given player name         
-    def get_elotg_byId(self, player_steam_id):
-        for i, id in enumerate(self.steam_id):
-            if(id == player_steam_id):
-                return self.elotg[i]
-        return -1
+    # returns the 1v1 elo for a given player name
+    def get_elo1v1(self, player_name: str):
+        return self._get_record_given_value(player_name, NAME, ELO)
 
-    #returns two teams balanced with respect of the sigle's tg elos
-    def balance_teams_internal(self, team_names):
+    # TODO: it works only if the searched values (id, nick, name) are unique. Verify that
+    def _get_record_given_value(
+        self, value: str, column: str, get: str
+    ) -> Union[str, int]:
+        """
+        Basically, a VLOOKUP of 'value' in 'column', and it returns the values from the column 'get'.
+        Return -1 if 'value' is not found
+
+        Args:
+            value (str): a name, steam_id, or discord name
+            column (str): column to use to search for 'value'
+            get (str): value to return
+
+        Returns:
+            _type_: _description_
+        """
+        if value not in self.df[column].values:
+            return -1
+
+        df_temp = self.df.set_index(column)
+        return df_temp.loc[value][get]
+
+    # returns the 1v1 elo for a given player steam id
+    def get_elo1v1_by_id(self, player_steam_id: int):
+        return self._get_record_given_value(player_steam_id, ID, ELO)
+
+    # returns the tg elo for a given player name
+    def get_elotg(self, player_name: str):
+        return self._get_record_given_value(player_name, NAME, ELO_TG)
+
+    # returns the tg elo for a given player name
+    def get_elotg_by_id(self, player_steam_id: int):
+        return self._get_record_given_value(player_steam_id, ID, ELO_TG)
+
+    #TODO: not sure what it should return exactly. Compare with previous code. If the same name is written twice, it will fail.
+    # returns two teams balanced with respect of the sigle's tg elos
+    def balance_teams_internal(self, team_names: list[str]) -> list:
         difference = 1000
-        team_elos = []
-        team = [-1,-1,-1]
-        
-        #checks to avoid shenanigans
-        if (len(team_names) % 2 != 0):
+
+        # checks to avoid shenanigans
+        if len(team_names) % 2 != 0:
             print("Number of players is odd, check it and try again")
             return -1
-        else:
-            if(len(team_names) == 2):
-                print("No need for balancing here")
-                return team
-            #finished with checks
-            else:
-                #takes the elo of the matching names
-                for team_name in team_names:
-                    for i, name in enumerate(self.names):
-                        if team_name == name:
-                            team_elos.append(self.elotg[i])
-                if len(team_elos) != len(team_names):
-                    print("Did not found some names, please be precise")
-                    return team
-                
-                #starting actual team balancing
-                team.clear()        
-                n = len(team_names)
-                team_elos = [int(elo) for elo in team_elos]
-                sum_elo = np.sum(np.array(team_elos))
-                possible_combinations = list(combinations(range(n),int(n/2)))
-                for i in range(len(possible_combinations)):
-                    sum = 0
-                    for j in range(int(n/2)):
-                        sum += team_elos[possible_combinations[i][j]]
+        if len(team_names) == 2:
+            print("No need for balancing here")
+            return team_names
+        for name in team_names:
+            if (self.df[NAME] == name).sum() == 0:
+                print(f"{name} not found!")
+                return -1
+        # finished with checks
 
-                    if difference > np.abs(sum - sum_elo/2):
-                        good_i = i
-                        difference = np.abs(sum - sum_elo/2)
-                team = possible_combinations[good_i]
-                
-                return team
-    
-    #balances the teams by providing the elos only
-    def balance_teams(self, elos):
+        df = self.df.query(f"{NAME} in {team_names}")
+        total_elo = df[ELO_TG].sum()
+
+        for team_a, team_b in list(combinations(df["Names"]), len(df) / 2):
+            team_a_elo = df[df[NAME].isin(team_a)][ELO_TG].sum()
+            if difference > abs(team_a_elo - total_elo / 2):
+                good_a, good_b = team_a, team_b
+                difference = abs(team_a_elo - total_elo / 2)
+        return [good_a, good_b]
+
+    # balances the teams by providing the elos only
+    def balance_teams(self, elos: list):
         difference = 1000
-        team = [-1,-1,-1]
-        if (len(elos) % 2 != 0):
+        team = [-1, -1, -1]
+        if len(elos) % 2 != 0:
             print("Number of players is odd, check it and try again")
             return -1
-        if(len(elos) == 2):
+        if len(elos) == 2:
             print("No need for balancing")
             return -2
+
         team.clear()
         n = len(elos)
         print(elos)
-        sum_elo = np.sum(np.array(elos))
-        possible_combinations = list(combinations(range(n),int(n/2)))
-        for i in range(len(possible_combinations)):
-            sum = 0
-            for j in range(int(n/2)):
-                sum += elos[possible_combinations[i][j]]
-            if (difference > np.abs(sum - sum_elo/2) ):
-                good_i = i
-                difference = np.abs(sum - sum_elo/2)
-            team = possible_combinations(good_i)
-        return team
+        sum_elo = sum(elos)
+        possible_combinations = list(combinations(elos, int(n / 2)))
+        for team_a, team_b in possible_combinations:
+            team_a_elo = sum(team_a)
+            if difference > abs(team_a_elo - sum_elo / 2):
+                good_a, good_b = team_a, team_b
+                difference = abs(team_a_elo - sum_elo / 2)
+        return [good_a, good_b]
 
-    #sets the elo
-    def set_elo(self, player_name, new_elo):
-            for i in range(len(self.names)):
-                if(player_name == self.names[i]):
-                    self.elo[i] = new_elo
-                    return 1
+    # sets the elo
+    def set_elo(self, player_name: str, new_elo: int):
+        if player_name not in self.df[NAME].values:
             return -1
-        
-    #gets the player nickname given a certain steam id
-    def get_name(self, player_steam_id):
-        for i in range(len(self.names)):
-            if(self.steam_id == player_steam_id):
-                return self.names[i]
-        return -1
-    
-    #gets the steam id corresponding to a certain player name
-    def get_steam_id(self, player_name):
-        for i in range(len(self.names)):
-            if(player_name == self.names[i]):
-                return self.steam_id[i]
-        return -1
-    
-    #computes the new elo of p1, assuming constant K 
-    def compute_elo(self, elo_p1, elo_p2, won):
-        p1 = 1.0 / (1.0 + np.power(10, (elo_p2 - elo_p1)/400))
-        return elo_p1 + K*(won - p1)
-    
-    #updates the elo of the specified player (by steam_id)
-    def update_elo(self, steam_id, is_1v1, new_elo):
-        for i in range(len(self.names)):
-            if self.steam_id[i] == steam_id:
-                if is_1v1:
-                    print("updated 1v1 elo, new elo is " + str(new_elo))
-                    self.elo1v1[i] = new_elo
-                else:
-                    self.elotg[i] = new_elo
-        #TOTEST
-        
-    
-    #allows to add a player to the database
-    def add_player(self, name, steam_id, elo_1v1, elo_tg):
-        if isinstance(name, str) and isinstance(steam_id, str) and isinstance(elo_1v1, int) and isinstance(elo_tg, int):
-            self.names.append(name)
-            self.discord_nick.append(name)
-            self.steam_id.append(steam_id)
-            self.elo1v1.append(elo_1v1)
-            self.elotg.append(elo_tg)
+        self.df.loc[self.df[NAME] == player_name, ELO] = new_elo
+
+    # gets the player nickname given a certain steam id
+    def get_name(self, player_steam_id: int):
+        return self._get_record_given_value(player_steam_id, ID, NICK)
+
+    # gets the steam id corresponding to a certain player name
+    def get_steam_id(self, player_name: str):
+        return self._get_record_given_value(player_name, NAME, ID)
+
+    # computes the new elo of p1, assuming constant K
+    def compute_elo(self, elo_p1: int, elo_p2: int, won):
+        p1 = 1.0 / (1.0 + np.power(10, (elo_p2 - elo_p1) / 400))
+        return elo_p1 + K * (won - p1)
+
+    def update_elo(self, steam_id: int, new_elo: int, is_1v1: bool):
+        if steam_id not in self.df[ID].values:
+            return -1
+        if is_1v1:
+            self.df.loc[self.df[ID] == steam_id, ELO] = new_elo
+        else:
+            self.df.loc[self.df[ID] == steam_id, ELO_TG] = new_elo
+
+    # TODO: why is "steam_id" a string?
+    # allows to add a player to the database
+    def add_player(self, name: str, steam_id, elo_1v1: int, elo_tg: int):
+        if (
+            isinstance(name, str)
+            and isinstance(steam_id, str)
+            and isinstance(elo_1v1, int)
+            and isinstance(elo_tg, int)
+        ):
+            new_player = {NAME: name,
+                          ID: steam_id,
+                          ELO: elo_1v1,
+                          ELO_TG: elo_tg}
+            self.df = pd.concat([self.df, pd.Series(new_player).to_frame.T], ignore_index=True)
+            # self.df.loc[self.df.index.max() + 1] = [name, steam_id, elo_1v1, elo_tg]
         else:
             print("some of the inputs where provided in the wrong format")
             return -1
         print(self.names)
-    
-    #allows to add a player to the database
-    def delete_player(self, name):
-        j = 0
-        for i in range(len(self.names)):
-            if j == len(self.names):
-                break
-            if name == self.names[i]:
-                j += 1
-                continue
-            self.names[i] = self.names[j]
-            self.steam_id[i] = self.steam_id[j]
-            self.elo1v1[i] = self.elo1v1[j]
-            self.elotg[i] = self.elotg[j]
-            self.discord_nick[i] = self.discord_nick[j] 
-            j += 1
-    
-    
-    #updates the csv with data previously saved
+
+    # allows to delete a player to the database
+    def delete_player(self, name: str):
+        if name not in self.df[NAME].values:
+            print("{name} not found!")
+            return -1
+        self.df = self.df[self.df[NAME] != name]
+
+    # updates the csv with data previously saved
     def update_csv(self):
-        with open(self.fileName,"w") as csvfile:
-            csvfile.write(",Names,Discord Nick,Steam ID,Elo 1v1, Elo tg\n")
-            for i in range(len(self.names)):
-                csvfile.write(str(i)+","+self.names[i]+","+self.discord_nick[i]+","+self.steam_id[i]+","+str(self.elo1v1[i])+","+str(self.elotg[i])+"\n")
-                #print(str(i)+","+self.names[i]+","+self.discord_nick[i]+","+self.steam_id[i]+","+str(self.elo1v1[i])+","+str(self.elotg[i])+"\n")
-    
-    #adds games to the file containing all the gametimes
+        self.df.reset_index().to_csv(self.fileName, index=False)
+
+    # TODO: I'm not sure what game timestamps are meant to be and how do we want to save them. Is "game_timestamps.csv" a simply a list of timestamps? Or is there a table structure in it?
+    # adds games to the file containing all the gametimes
     def add_game(self, timestamp):
-        with open(self.fileName_timestamps,"a") as timefile:
-            timefile.write(str(timestamp)+"\n")
-    
-    #checks if a timestamp is already present in the file
+        with open(self.fileName_timestamps, "a") as timefile:
+            timefile.write(str(timestamp) + "\n")
+
+    # TODO: read previous todo
+    # checks if a timestamp is already present in the file
     def check_game(self, timestamp):
         timefile = open(self.fileName_timestamps, "r")
         lines = timefile.readlines()
@@ -219,8 +183,9 @@ class AOE2ItaliaElo:
             if str(timestamp) in line:
                 return True
         return False
-    
-    def all_players_registered(self,steam_id):
+
+    # TODO: what is the goal of this function?
+    def all_players_registered(self, steam_id):
         count = 0
         for id in steam_id:
             for i in range(len(self.steam_id)):
@@ -230,6 +195,3 @@ class AOE2ItaliaElo:
             return True
         else:
             return False
-                
-    
-            

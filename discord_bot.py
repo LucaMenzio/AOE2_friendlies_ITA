@@ -24,16 +24,19 @@ message = "Please check if the bot command is used correctly"
 #---------------------------------------------------------------------
 @bot.command(name='elo1v1', help='Retrieves the 1v1 elo of the specified player name (please use "")')
 async def create_team(ctx, player):
-    message = str(Elo.get_elo1v1(player))
-    await ctx.send(message)
+    elo = Elo.get_elo1v1(player)
+    await ctx.send(f"{player}: {elo} (1v1)")
 
 #---------------------------------------------------------------------
 @bot.command(name='elotg', help='Retrieves the tg elo of the specified player name (please use "")')
 async def create_team(ctx, player):
-    message = str(Elo.get_elotg(player))
+    elo = Elo.get_elotg(player)
     if player == "HSL | Loris":
         message = "Il capo non ha Elo, ma l\'Elo ha un capo (scarso, comunque)"
-    await ctx.send(message)
+        await ctx.send(message)
+        return None
+    await ctx.send(f"{player}: {elo} (tg)")
+
 
 #---------------------------------------------------------------------
 @bot.command(name='create_team', help='Creates a balanced team given the players names (e.g. !create_team "ITA | Born to be Brain" "OS | Piero" "ITA | Carma" "OS | Nessuno" )')
@@ -133,16 +136,12 @@ async def balance_lobby_by1v1(ctx, lobby_id):
 @bot.command(name='print_csv', help='Shows the database (csv) - for admin only')
 @commands.has_permissions(administrator=True)
 async def print_csv(ctx):
-    message = ""
-    await ctx.send("Names\tDiscord Nick\tSteam ID\tElo 1v1\tElo tg")
-    for i in range(len(Elo.names)):
-        message += str(Elo.names[i]) + "\t" + str(Elo.discord_nick[i]) + "\t" + str(Elo.steam_id[i]) + "\t" + str(Elo.elo1v1[i]) + "\t" + str(Elo.elotg[i]) + "\n"
-        if i % 20 == 0:
-            await ctx.send(message)
-            message = ""
-        if i == len(Elo.names) -1:
-            await ctx.send(message)
-    
+    max_len = len(Elo.df)
+    max_lines = 20
+    for i in range(max_len // max_lines):
+        output = Elo.df.iloc[i * max_lines: (i + 1) * max_lines].to_string(justify="right")
+        await ctx.send(f"```\n{output}\n```")
+
 
 #---------------------------------------------------------------------
 @bot.command(name='add_player', help='Adds a player to the database - e.g. !add_player "Mozzo Infame" "12345666" 800 921 ')
