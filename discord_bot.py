@@ -44,17 +44,10 @@ async def create_team(ctx, *players):
     if(len(players) % 2 != 0):
         await ctx.send("Check the number of players, it is odd")
     
-    team = Elo.balance_teams_internal(players)
+    team_0, team_1 = Elo.balance_teams_internal(players)
     message ="The best combination of players is \n" 
-    for i, player in enumerate(players):
-        flag = False
-        for ctrl in team:
-            if ctrl == i: 
-                flag = True
-        if flag:
-            message += "Team 0 \t " + player + " \n"
-        else:
-            message += "Team 1 \t " + player + "\n"
+    message += f"Team 0: {team_0}\n"
+    message += f"Team 1: {team_1}"
     await ctx.send(message)
     
 #---------------------------------------------------------------------
@@ -66,9 +59,11 @@ async def create_team(ctx, player, n_games):
     names = []
     
     in_steam_id = Elo.get_steam_id(player)
-    await ctx.send("Retrieving "+str(n_games)+" matches played by "+player+" with steam ID "+in_steam_id)
+    await ctx.send("Retrieving " + str(n_games) + " matches played by " + player + " with steam ID " + in_steam_id)
     message = ""
+    # TODO: update rlk.getMatches to newest AOE2ItaliaElo
     steam_ids, names, results = rlk.getMatches(in_steam_id, int(n_games))
+    # TODO: update code below to newest AOE2ItaliaElo and newest rlk.getMatches
     for i in range(len(steam_ids)):
         if i == 0:
             continue
@@ -86,28 +81,29 @@ async def create_team(ctx, player, n_games):
 @bot.command(name='balance_lobby', help='Balances the teams in the specified lobby employing the internal tg Elo - e.g. !balance_lobby 254830248')
 async def balance_lobby(ctx, lobby_id):
     names = []
+    
     steam_ids = rlk.findLobby_byID(lobby_id)
     if steam_ids == -2:
         await ctx.send("Error, lobby not found")
     if(len(steam_ids) < 4 or len(steam_ids) %2 != 0):
         await ctx.send("Check the number of players, it is odd or there are less than 3 players")
-    for j,id in enumerate(steam_ids):
+    for j, id in enumerate(steam_ids):
         if(Elo.get_name(id)):
             await ctx.send("The " +str(j)+"-th player is not registered on the database. Please use the !balance_lobby_1v1elo command or add him/her to the database first")
         names.append(Elo.get_name(id))
         
     team = Elo.balance_teams_internal(names)
-    if isinstance(team, int):
+    if team == -1:
         await ctx.send("the lobby does not contain the right amount of players")
     else:
-        message = ""
-        for i in range(len(names)):
-            message += names[i] + "\t" + team[i] + "\n"
-        await ctx.send("The most balanced combination is:\n")
+        team_0, team_1 = Elo.balance_teams_internal(names)
+        message = "The best combination of players is \n" 
+        message += f"Team 0: {team_0}\n"
+        message += f"Team 1: {team_1}"
         await ctx.send(message)
 
 #---------------------------------------------------------------------
-@bot.command(name='balance_lobby_1v1', help='Balances the teams in the specified lobby empoying the 1v1 RM Elo  - e.g. !balance_lobby 254830248')
+@bot.command(name='balance_lobby_1v1', help='Balances the teams in the specified lobby empoying the 1v1 RM Elo  - e.g. !balance_lobby_1v1 254830248')
 async def balance_lobby_by1v1(ctx, lobby_id):
     elos = []
     team_names = []
@@ -122,13 +118,15 @@ async def balance_lobby_by1v1(ctx, lobby_id):
             name, elos = rlk.getElos(id)
             team_names.append(name)
             team_elos.append(elos[1])
-        team = Elo.balance_teams(team_elos)
-        if isinstance(team, int):
+        teams = Elo.balance_teams(team_elos)
+        if teams == -1:
             await ctx.send("the lobby does not contain the right amount of players")
         else:
             message = ""
             for i in range(len(team_elos)):
-                message += team_names[i] + "\t" + team[i] + "\n"
+            # TODO: I think the new Elo.balance_teams is not compatible with this, 
+            # because it reorders the players' Elo
+                message += team_names[i] + "\t" + teams[i] + "\n"
             await ctx.send("The most balanced combination is:\n")
             await ctx.send(message)
 
@@ -157,9 +155,9 @@ async def add_player(ctx, name, steam_id, elo1v1, elotg):
 #---------------------------------------------------------------------
 @bot.command(name='delete_player', help='Deletes a player to the database - e.g. !delete_player "nickname" -  for admin only')
 #@has_permission(administrator=True)
-async def add_player(ctx, name, steam_id, elo1v1, elotg):
-    
-    if(Elo.delete_player(name,steam_id,elo1v1,elotg)):
+async def delete_player(ctx, name, steam_id, elo1v1, elotg):
+    if(Elo.delete_player(name, steam_id, elo1v1, elotg)):
+        # TODO: shouldn't this function call Elo.update_csv() as well?
         await ctx.send("Player "+ name + " deleted successfully")
     else:
         await ctx.send("There was an issue deleting the player, call Loris and Circe")
