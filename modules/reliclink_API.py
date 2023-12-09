@@ -10,7 +10,8 @@ class relicAPI:
         self.names = [[]]
         self.results = [[]]
     
-    #gives back info regarding a certain match(es) found with some player steam_id
+    # This only return "n_matches" matches, but they are not sorted by dates. Is that okay?
+    # gives back info regarding a certain match(es) found with some player steam_id
     def getMatches(self, in_steam_id, n_matches):
         
         a = 0

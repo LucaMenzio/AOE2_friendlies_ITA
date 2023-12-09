@@ -4,7 +4,7 @@ import pandas as pd
 
 from itertools import combinations
 from typing import Union
-from modules.constants import NAME, NICK, ID, ELO, ELO_TG
+from modules.constants import NAME, NICK, STEAM_ID, ELO, ELO_TG
 
 # constant for elo calculation
 K = 30.0
@@ -17,8 +17,8 @@ class AOE2ItaliaElo:
         self.fileName_timestamps = "files/game_timestamps.csv"
         
         # getting all the info from the csv
-        self.df = pd.read_csv(self.fileName, index_col=0)
-        self.df[[ID, ELO, ELO_TG]] = self.df[[ID, ELO, ELO_TG]].astype("Int64")
+        self.df = pd.read_csv(self.fileName, index_col=0, dtype= {"Steam ID":"str"})
+        self.df[[STEAM_ID, ELO, ELO_TG]] = self.df[[STEAM_ID, ELO, ELO_TG]]
         self.df_timestamps = pd.read_csv(self.fileName_timestamps, index_col=0)
 
     # returns the 1v1 elo for a given player name
@@ -49,7 +49,7 @@ class AOE2ItaliaElo:
 
     # returns the 1v1 elo for a given player steam id
     def get_elo1v1_by_id(self, player_steam_id: int):
-        return self._get_record_given_value(player_steam_id, ID, ELO)
+        return self._get_record_given_value(player_steam_id, STEAM_ID, ELO)
 
     # returns the tg elo for a given player name
     def get_elotg(self, player_name: str):
@@ -57,7 +57,7 @@ class AOE2ItaliaElo:
 
     # returns the tg elo for a given player name
     def get_elotg_by_id(self, player_steam_id: int):
-        return self._get_record_given_value(player_steam_id, ID, ELO_TG)
+        return self._get_record_given_value(player_steam_id, STEAM_ID, ELO_TG)
 
     #TODO: not sure what it should return exactly. Compare with previous code. If the same name is written twice, it will fail.
     # returns two teams balanced with respect of the sigle's tg elos
@@ -118,11 +118,11 @@ class AOE2ItaliaElo:
 
     # gets the player nickname given a certain steam id
     def get_name(self, player_steam_id: int):
-        return self._get_record_given_value(player_steam_id, ID, NICK)
+        return self._get_record_given_value(player_steam_id, STEAM_ID, NICK)
 
     # gets the steam id corresponding to a certain player name
     def get_steam_id(self, player_name: str):
-        return self._get_record_given_value(player_name, NAME, ID)
+        return self._get_record_given_value(player_name, NAME, STEAM_ID)
 
     # computes the new elo of p1, assuming constant K
     def compute_elo(self, elo_p1: int, elo_p2: int, won):
@@ -130,14 +130,13 @@ class AOE2ItaliaElo:
         return elo_p1 + K * (won - p1)
 
     def update_elo(self, steam_id: int, new_elo: int, is_1v1: bool):
-        if steam_id not in self.df[ID].values:
+        if steam_id not in self.df[STEAM_ID].values:
             return -1
         if is_1v1:
-            self.df.loc[self.df[ID] == steam_id, ELO] = new_elo
+            self.df.loc[self.df[STEAM_ID] == steam_id, ELO] = new_elo
         else:
-            self.df.loc[self.df[ID] == steam_id, ELO_TG] = new_elo
+            self.df.loc[self.df[STEAM_ID] == steam_id, ELO_TG] = new_elo
 
-    # TODO: why is "steam_id" a string?
     # allows to add a player to the database
     def add_player(self, name: str, steam_id, elo_1v1: int, elo_tg: int):
         if (
@@ -147,11 +146,10 @@ class AOE2ItaliaElo:
             and isinstance(elo_tg, int)
         ):
             new_player = {NAME: name,
-                          ID: steam_id,
+                          STEAM_ID: steam_id,
                           ELO: elo_1v1,
                           ELO_TG: elo_tg}
             self.df = pd.concat([self.df, pd.Series(new_player).to_frame.T], ignore_index=True)
-            # self.df.loc[self.df.index.max() + 1] = [name, steam_id, elo_1v1, elo_tg]
         else:
             print("some of the inputs where provided in the wrong format")
             return -1

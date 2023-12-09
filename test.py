@@ -1,18 +1,14 @@
-from modules import *
+from modules.Elo_csv import AOE2ItaliaElo
+from modules.reliclink_API import relicAPI
+import requests
 
-a = Elo.AOE2ItaliaElo()
+# a = AOE2ItaliaElo()
 
-b = reliclink_API.relicAPI()
+b = relicAPI()
 #print(b.getElos(a.get_steam_id("HSL | Muca")) )
 
 print(b.findLobby_byID(254830248))
 
 
-'''
-names = ["JohnBaudelaire", "ITA | Canazzo", "ITA | Born to be Brain", "ITA | Carma", "ITA | Francesco III", "ITA | GoldFish"]
-print(a.get_steam_id("NAPS | L'Ammiraglio"))
-
-b = aoe2net_API.Matches()
-
-print(b.look_for_matches(76561197996386232,"ranked"))
-'''
+msg = requests
+print(msg)
