@@ -18,6 +18,14 @@ class Player:
         self._elo_ingame: Elo = elo_ingame
         self._elo_tg: Elo = elo_tg_ingame
 
+    @property
+    def elo(self) -> Elo:
+        return self._elo
+
+    @property
+    def elo_tg(self) -> Elo:
+        return self._elo_tg
+
     def update_win(self, other: "Player") -> None:
         """
         Update Elo of self after winning against other
