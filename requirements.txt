@@ -8,11 +8,11 @@ discord.py==2.3.1
 frozenlist==1.4.0
 idna==3.4
 multidict==6.0.4
-mysql-connector-python==8.0.33
 numpy==1.25.1
 pandas
 protobuf==3.20.3
 python-dotenv==1.0.0
+PyYAML
 requests==2.31.0
 urllib3==2.0.3
 yarl==1.9.2

@@ -1,4 +1,5 @@
 # API: getRecentMatchHistory
+
 At the moment, a working API is the following:
 
 ```https://aoe-api.worldsedgelink.com/community/leaderboard/getRecentMatchHistory?title=age2&profile_names=[%22/steam/{STEAM_ID}%22]```
@@ -9,8 +10,8 @@ for example
 This api will return information about 'recent' matches of a given Steam ID. It includes for sure Ranked games and Quickplay.
 It remains unclear whether the search results include private lobbies. Additionally, the absence of chronological ordering makes it uncertain if all recent games are displayed.
 
-
 # API response description
+
 A request to the getRecentMatchHistory API, will return a JSON with the following structure:
 
 
@@ -24,9 +25,10 @@ A request to the getRecentMatchHistory API, will return a JSON with the followin
 
 In this page, we described each element of the JSON response, for documentation
 
-
 ## result
+
 This is simply metadata about the API request placed.
+
 ```json
     "result": {
         "code": 0,  # 0 if successful, 5 if steam ID not found
@@ -35,6 +37,7 @@ This is simply metadata about the API request placed.
 ```
 
 ## matchHistoryStats
+
 This is a list of matches. Each match is a dictionary with many fields, described below.
 
 ```json
@@ -67,11 +70,9 @@ More detailed info on [libreMatch wiki](https://wiki.librematch.org/rlink/commun
 | 20               | Quickplay 3v3         |
 | 21               | Quickplay 4v4         |
 
-
-
 ## profiles
 
-This contains a list (an array in JSON) of all the profiles found in matches from *matchHistoryStats*. Below, an example of one element from the list: 
+This contains a list (an array in JSON) of all the profiles found in matches from *matchHistoryStats*. Below, an example of one element from the list:
 
 ```json
 {
