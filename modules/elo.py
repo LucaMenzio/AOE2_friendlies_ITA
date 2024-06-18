@@ -2,9 +2,8 @@ from typing import Self, Sequence
 
 import numpy as np
 
+from modules.constants import ELO_K
 from modules.utils import exactly_one_kw_only_arg
-
-K = 30.0
 
 
 class Elo:
@@ -37,7 +36,7 @@ class Elo:
             float: changes in Elo for winner
         """
         p1 = 1.0 / (1.0 + np.power(10, (loser.elo - winner.elo) / 400))
-        return K * (1 - p1)
+        return ELO_K * (1 - p1)
 
     @exactly_one_kw_only_arg
     def update_win(
@@ -82,7 +81,7 @@ class Elo:
             others = [other]
 
         others_elo = self.team_elo(others)
-        change = self.compute_elo_change(others_elo, self)
+        change = -self.compute_elo_change(others_elo, self)
         self.update_elo(change)
 
     @staticmethod

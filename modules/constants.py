@@ -1,5 +1,7 @@
 from enum import Enum
 
+ELO_K = 30.0
+
 
 class MatchType(Enum):
     NULL = 0
