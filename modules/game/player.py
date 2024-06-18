@@ -1,4 +1,6 @@
-from modules.elo import Elo
+from typing import Self
+
+from modules.elo import Elo, Sequence
 
 
 class Player:
@@ -26,44 +28,42 @@ class Player:
     def elo_tg(self) -> Elo:
         return self._elo_tg
 
-    def update_win(self, other: "Player") -> None:
+    def update_win(self, other: Self) -> None:
         """
         Update Elo of self after winning against other
 
         Args:
             other (Player): loser player
         """
-        raise NotImplementedError
+        self._elo.update_win(other=other.elo)
 
-    def update_loss(self, other: "Player") -> None:
+    def update_loss(self, other: Self) -> None:
         """
         Update Elo of self after losing against other
 
         Args:
             other (Player): winner player
         """
-        raise NotImplementedError
+        self._elo.update_loss(other=other.elo)
 
-    # TODO: write interface for other in case of team
-    def update_win_tg(self, other) -> None:
+    def update_win_tg(self, others: Sequence[Self]) -> None:
         """
         Update Elo of self after winning against other Team
 
         Args:
             other (???): loser team
         """
-        raise NotImplementedError
+        self._elo_tg.update_win(others=[other._elo_tg for other in others])
 
     # TODO: write interface for other in case of team
-    def update_loss_tg(self, other):
+    def update_loss_tg(self, others: Sequence[Self]) -> None:
         """
         Update Elo of self after losing against other Team
 
-
         Args:
-            other (???): winner team
+            others: winner team
         """
-        raise NotImplementedError
+        self._elo_tg.update_loss(others=[other._elo_tg for other in others])
 
 
 class PlayerAPI:

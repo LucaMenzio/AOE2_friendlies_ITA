@@ -14,21 +14,17 @@ class Team:
         self._validate_player_numbers()
         self._size = self._compute_size()
 
-    def _compute_size(self) -> int:
-        size = 2
-        return size + bool(self.p3) + bool(self.p4)
-
     def _validate_player_numbers(self) -> None:
         if self.p4 and not self.p3:
             raise ValueError("Can't assign a player #4 without giving player #3")
 
-    def _compute_team_elo(self) -> Elo:
-        return Elo.team_elo([player.elo_tg for player in self.players])
+    def _compute_size(self) -> int:
+        size = 2
+        return size + bool(self.p3) + bool(self.p4)
 
     @property
     def elo(self) -> Elo:
-        value = int(sum([player.elo_tg.elo for player in self.players]) / self.size)
-        return Elo(value)
+        return Elo.team_elo(self.elos)
 
     @property
     def size(self) -> int:
@@ -45,7 +41,7 @@ class Team:
         return players
 
     @property
-    def elos(self) -> list[int]:
+    def elos(self) -> list[Elo]:
         elos = []
         for player in self.players:
             elos.append(player.elo_tg)
