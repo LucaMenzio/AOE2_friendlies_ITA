@@ -98,3 +98,9 @@ class Elo:
         """
         elo = sum([player.elo for player in players]) / len(players)
         return Elo(elo)
+
+    def _overwrite_elo(self, new_elo: float):
+        """
+        This method shouldn't be used to update elo!
+        """
+        self._elo = new_elo
