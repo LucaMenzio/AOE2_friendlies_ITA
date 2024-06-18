@@ -1,6 +1,10 @@
 from typing import Self, Sequence
 
+import numpy as np
+
 from modules.utils import exactly_one_kw_only_arg
+
+K = 30.0
 
 
 class Elo:
@@ -9,30 +13,31 @@ class Elo:
     It implements elo win/loss changes
     """
 
-    def __init__(self, elo: int) -> None:
-        self._elo: int = elo
+    def __init__(self, elo: float) -> None:
+        self._elo: float = elo
 
     @property
     def elo(self):
         """Elo value"""
         return self._elo
 
-    def update_elo(self, change: int):
+    def update_elo(self, change: float):
         self._elo += change
 
     @staticmethod
-    def compute_elo_change(winner: "Elo", loser: "Elo") -> int:
+    def compute_elo_change(winner: "Elo", loser: "Elo") -> float:
         """
-        Compute elo points won
+        Compute elo pofloats won
 
         Args:
             winner (Elo): Elo of winner
             loser (Elo): Elo of loser
 
         Returns:
-            int: changes in Elo for winner
+            float: changes in Elo for winner
         """
-        raise NotImplementedError
+        p1 = 1.0 / (1.0 + np.power(10, (loser.elo - winner.elo) / 400))
+        return K * (1 - p1)
 
     @exactly_one_kw_only_arg
     def update_win(
@@ -91,5 +96,5 @@ class Elo:
         Returns:
             Elo: Elo object with the combined elo
         """
-        elo = int(sum([player.elo for player in players]) / len(players))
+        elo = sum([player.elo for player in players]) / len(players)
         return Elo(elo)
