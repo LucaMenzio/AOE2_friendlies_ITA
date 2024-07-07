@@ -24,13 +24,14 @@ def test_update_elo():
 
 
 @mark.parametrize(
-    argnames=["elo_w", "elo_l", "change_w"], argvalues=[(1000, 1000, ELO_K / 2)]
+    argnames=["elo_w", "elo_l", "change_w"],
+    argvalues=[(1000, 1000, ELO_K / 2), (1100, 1000, 10.8)],
 )
 def test_compute_change(elo_w, elo_l, change_w):
     elo_w = Elo(elo_w)
     elo_l = Elo(elo_l)
     change = Elo.compute_elo_change(elo_w, elo_l)
-    assert change == change_w
+    assert abs(change - change_w) < 0.1
 
 
 def test_update_win_other():
