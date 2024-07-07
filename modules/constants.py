@@ -1,6 +1,12 @@
+import os
 from enum import Enum
 
+from dotenv import load_dotenv
+
 ELO_K = 30.0
+
+load_dotenv()
+MY_STEAM_ID = os.getenv("MY_STEAM_ID")
 
 
 class MatchType(Enum):

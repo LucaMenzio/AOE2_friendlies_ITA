@@ -14,13 +14,12 @@ It remains unclear whether the search results include private lobbies. Additiona
 
 A request to the getRecentMatchHistory API, will return a JSON with the following structure:
 
-
 ```json
-{
-    "result": {...},  # an error code and a info on whether the request was successful or not
-    "matchHistoryStats": [...],  # a list of matches, from many leaderboard, with all the details about them
-    "profiles": [...]  # A list of all the profiles seen in the matches returned, with details for each profile
-}
+    {
+        "result": {...},  # an error code and a info on whether the request was successful or not
+        "matchHistoryStats": [...],  # a list of matches, from many leaderboard, with all the details about them
+        "profiles": [...]  # A list of all the profiles seen in the matches returned, with details for each profile
+    }
 ```
 
 In this page, we described each element of the JSON response, for documentation
