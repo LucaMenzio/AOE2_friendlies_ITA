@@ -3,6 +3,13 @@ import inspect
 
 
 def exactly_one_kw_only_arg(func):
+    """
+    Decorator that verifies that one and only one optional argument is given
+
+    Raises:
+        ValueError: If 0 or > 1 optionla arguments are given, raise en error
+    """
+
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         signature = inspect.signature(func)

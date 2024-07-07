@@ -55,6 +55,8 @@ class Elo:
             assert others is not None
         if others is None:
             assert other is not None
+            # Warning: this works only because the elo of a team with 1 player equals elo of that player
+            # if it the formula for team Elo would change, the rest of the code here would be wrong
             others = [other]
 
         others_elo = self.team_elo(others)
