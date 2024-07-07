@@ -1,10 +1,10 @@
-import numpy as np
-import csv
-import pandas as pd
-
 from itertools import combinations
 from typing import Union
-from modules.constants import NAME, NICK, STEAM_ID, ELO, ELO_TG
+
+import numpy as np
+import pandas as pd
+
+from modules.constants import ELO, ELO_TG, NAME, NICK, STEAM_ID
 
 # constant for elo calculation
 K = 30.0
@@ -12,12 +12,13 @@ K = 30.0
 
 class AOE2ItaliaElo:
     """Main class to read, write and update the csv file containing ELOs of all players"""
+
     def __init__(self, file_name: str):
         self.fileName = file_name
         self.fileName_timestamps = "files/game_timestamps.csv"
-        
+
         # getting all the info from the csv
-        self.df = pd.read_csv(self.fileName, index_col=0, dtype= {"Steam ID":"str"})
+        self.df = pd.read_csv(self.fileName, index_col=0, dtype={"Steam ID": "str"})
         self.df[[STEAM_ID, ELO, ELO_TG]] = self.df[[STEAM_ID, ELO, ELO_TG]]
         self.df_timestamps = pd.read_csv(self.fileName_timestamps, index_col=0)
 
@@ -59,7 +60,7 @@ class AOE2ItaliaElo:
     def get_elotg_by_id(self, player_steam_id: int):
         return self._get_record_given_value(player_steam_id, STEAM_ID, ELO_TG)
 
-    #TODO: not sure what it should return exactly. Compare with previous code. If the same name is written twice, it will fail.
+    # TODO: not sure what it should return exactly. Compare with previous code. If the same name is written twice, it will fail.
     # returns two teams balanced with respect of the sigle's tg elos
     def balance_teams_internal(self, team_names: list[str]) -> list:
         difference = 1000
@@ -145,11 +146,10 @@ class AOE2ItaliaElo:
             and isinstance(elo_1v1, int)
             and isinstance(elo_tg, int)
         ):
-            new_player = {NAME: name,
-                          STEAM_ID: steam_id,
-                          ELO: elo_1v1,
-                          ELO_TG: elo_tg}
-            self.df = pd.concat([self.df, pd.Series(new_player).to_frame.T], ignore_index=True)
+            new_player = {NAME: name, STEAM_ID: steam_id, ELO: elo_1v1, ELO_TG: elo_tg}
+            self.df = pd.concat(
+                [self.df, pd.Series(new_player).to_frame.T], ignore_index=True
+            )
         else:
             print("some of the inputs where provided in the wrong format")
             return -1

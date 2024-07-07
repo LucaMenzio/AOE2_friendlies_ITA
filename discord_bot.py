@@ -1,67 +1,87 @@
 import os
-import random
 
-from discord.ext import commands, tasks
-#from discord.ext.commands import has_permission
+# from discord.ext.commands import has_permission
 import discord
+from discord.ext import commands
 from dotenv import load_dotenv
 
 from modules.Elo_csv import AOE2ItaliaElo
 from modules.reliclink_API import relicAPI
 
 load_dotenv()
-TOKEN = os.getenv('DISCORD_TOKEN')
+TOKEN = os.getenv("DISCORD_TOKEN")
 
 intents = discord.Intents.default()
 intents.message_content = True
 
-bot = commands.Bot(command_prefix='!', intents=intents)
-Elo = AOE2ItaliaElo("files/elo_aoe2italia_internal_updated_temp.csv")    
+bot = commands.Bot(command_prefix="!", intents=intents)
+Elo = AOE2ItaliaElo("files/elo_aoe2italia_internal_updated_temp.csv")
 rlk = relicAPI()
 
 
 message = "Please check if the bot command is used correctly"
 
-#---------------------------------------------------------------------
-@bot.command(name='elo1v1', help='Retrieves the 1v1 elo of the specified player name (please use "")')
+
+# ---------------------------------------------------------------------
+@bot.command(
+    name="elo1v1",
+    help='Retrieves the 1v1 elo of the specified player name (please use "")',
+)
 async def elo1v1(ctx, player):
     elo = Elo.get_elo1v1(player)
     print("CIAO")
     await ctx.send(f"{player}: {elo} (1v1)")
 
-#---------------------------------------------------------------------
-@bot.command(name='elotg', help='Retrieves the tg elo of the specified player name (please use "")')
+
+# ---------------------------------------------------------------------
+@bot.command(
+    name="elotg",
+    help='Retrieves the tg elo of the specified player name (please use "")',
+)
 async def elotg(ctx, player):
     elo = Elo.get_elotg(player)
     if player == "HSL | Loris":
-        message = "Il capo non ha Elo, ma l\'Elo ha un capo (scarso, comunque)"
+        message = "Il capo non ha Elo, ma l'Elo ha un capo (scarso, comunque)"
         await ctx.send(message)
         return None
     await ctx.send(f"{player}: {elo} (tg)")
 
 
-#---------------------------------------------------------------------
-@bot.command(name='create_team', help='Creates a balanced team given the players names (e.g. !create_team "ITA | Born to be Brain" "OS | Piero" "ITA | Carma" "OS | Nessuno" )')
+# ---------------------------------------------------------------------
+@bot.command(
+    name="create_team",
+    help='Creates a balanced team given the players names (e.g. !create_team "ITA | Born to be Brain" "OS | Piero" "ITA | Carma" "OS | Nessuno" )',
+)
 async def create_team(ctx, *players):
-    if(len(players) % 2 != 0):
+    if len(players) % 2 != 0:
         await ctx.send("Check the number of players, it is odd")
-    
+
     team_0, team_1 = Elo.balance_teams_internal(players)
-    message ="The best combination of players is \n" 
+    message = "The best combination of players is \n"
     message += f"Team 0: {team_0}\n"
     message += f"Team 1: {team_1}"
     await ctx.send(message)
-    
-#---------------------------------------------------------------------
-@bot.command(name='get_matchinfo', help='Retrieves the info about the last match played by the specified player')
-async def get_matchinfo(ctx, player, n_games):
 
+
+# ---------------------------------------------------------------------
+@bot.command(
+    name="get_matchinfo",
+    help="Retrieves the info about the last match played by the specified player",
+)
+async def get_matchinfo(ctx, player, n_games):
     steam_ids = []
     results = []
     names = []
-    
+
     in_steam_id = Elo.get_steam_id(player)
-    await ctx.send("Retrieving " + str(n_games) + " matches played by " + player + " with steam ID " + in_steam_id)
+    await ctx.send(
+        "Retrieving "
+        + str(n_games)
+        + " matches played by "
+        + player
+        + " with steam ID "
+        + in_steam_id
+    )
     message = ""
     # TODO: update rlk.getMatches to newest AOE2ItaliaElo
     steam_ids, names, results = rlk.getMatches(in_steam_id, int(n_games))
@@ -70,42 +90,54 @@ async def get_matchinfo(ctx, player, n_games):
         if i == 0:
             continue
         message = "```"
-        message+= "Game number "+str(i)+"\n"
-        message+="+---------------------------------------+\n"
-        message+="\tPlayer | Result |\n"
-        message+="+---------------------------------------+\n"
+        message += "Game number " + str(i) + "\n"
+        message += "+---------------------------------------+\n"
+        message += "\tPlayer | Result |\n"
+        message += "+---------------------------------------+\n"
         for j in range(len(steam_ids[i])):
-            won = 'Won' if results[i][j] == 1 else 'Lost'
-            message+="\t"+str(names[i][j])+" \t\t "+str(won)+"\n"
-        await ctx.send(message+"```")
+            won = "Won" if results[i][j] == 1 else "Lost"
+            message += "\t" + str(names[i][j]) + " \t\t " + str(won) + "\n"
+        await ctx.send(message + "```")
 
-#---------------------------------------------------------------------
-@bot.command(name='balance_lobby', help='Balances the teams in the specified lobby employing the internal tg Elo - e.g. !balance_lobby 254830248')
+
+# ---------------------------------------------------------------------
+@bot.command(
+    name="balance_lobby",
+    help="Balances the teams in the specified lobby employing the internal tg Elo - e.g. !balance_lobby 254830248",
+)
 async def balance_lobby(ctx, lobby_id):
     names = []
-    
+
     steam_ids = rlk.findLobby_byID(lobby_id)
     if steam_ids == -2:
         await ctx.send("Error, lobby not found")
-    if(len(steam_ids) < 4 or len(steam_ids) %2 != 0):
-        await ctx.send("Check the number of players, it is odd or there are less than 3 players")
+    if len(steam_ids) < 4 or len(steam_ids) % 2 != 0:
+        await ctx.send(
+            "Check the number of players, it is odd or there are less than 3 players"
+        )
     for j, id in enumerate(steam_ids):
-        if(Elo.get_name(id) == -1):
-            await ctx.send(f"The {j}-th player with Steam ID {id} is not registered on the database. Please use the !balance_lobby_1v1elo command or add them to the database first")
+        if Elo.get_name(id) == -1:
+            await ctx.send(
+                f"The {j}-th player with Steam ID {id} is not registered on the database. Please use the !balance_lobby_1v1elo command or add them to the database first"
+            )
         names.append(Elo.get_name(id))
-        
+
     team = Elo.balance_teams_internal(names)
     if team == -1:
         await ctx.send("the lobby does not contain the right amount of players")
     else:
         team_0, team_1 = Elo.balance_teams_internal(names)
-        message = "The best combination of players is \n" 
+        message = "The best combination of players is \n"
         message += f"Team 0: {team_0}\n"
         message += f"Team 1: {team_1}"
         await ctx.send(message)
 
-#---------------------------------------------------------------------
-@bot.command(name='balance_lobby_1v1', help='Balances the teams in the specified lobby empoying the 1v1 RM Elo  - e.g. !balance_lobby_1v1 254830248')
+
+# ---------------------------------------------------------------------
+@bot.command(
+    name="balance_lobby_1v1",
+    help="Balances the teams in the specified lobby empoying the 1v1 RM Elo  - e.g. !balance_lobby_1v1 254830248",
+)
 async def balance_lobby_by1v1(ctx, lobby_id):
     elos = []
     team_names = []
@@ -113,8 +145,10 @@ async def balance_lobby_by1v1(ctx, lobby_id):
     steam_ids = rlk.findLobby_byID(lobby_id)
     print(steam_ids)
     if isinstance(steam_ids, int):
-        if steam_ids == -2: await ctx.send("The number of players must be greater than 3 and even")
-        else: await ctx.send("Could not find the specified lobby")
+        if steam_ids == -2:
+            await ctx.send("The number of players must be greater than 3 and even")
+        else:
+            await ctx.send("Could not find the specified lobby")
     else:
         for id in steam_ids:
             name, elos = rlk.getElos(id)
@@ -126,52 +160,66 @@ async def balance_lobby_by1v1(ctx, lobby_id):
         else:
             message = ""
             for i in range(len(team_elos)):
-                message = "The best combination of players is \n" 
+                message = "The best combination of players is \n"
                 message += f"Team 0: {teams[0]}\n"
                 message += f"Team 1: {teams[1]}"
                 await ctx.send(message)
 
-#---------------------------------------------------------------------
-@bot.command(name='print_csv', help='Shows the database (csv) - for admin only')
+
+# ---------------------------------------------------------------------
+@bot.command(name="print_csv", help="Shows the database (csv) - for admin only")
 @commands.has_permissions(administrator=True)
 async def print_csv(ctx):
     max_len = len(Elo.df)
     max_lines = 20
     for i in range(max_len // max_lines):
-        output = Elo.df.iloc[i * max_lines: (i + 1) * max_lines].to_string(justify="right")
+        output = Elo.df.iloc[i * max_lines : (i + 1) * max_lines].to_string(
+            justify="right"
+        )
         await ctx.send(f"```\n{output}\n```")
 
 
-#---------------------------------------------------------------------
-@bot.command(name='add_player', help='Adds a player to the database - e.g. !add_player "Mozzo Infame" "12345666" 800 921 ')
-#@has_permission(administrator=True)
+# ---------------------------------------------------------------------
+@bot.command(
+    name="add_player",
+    help='Adds a player to the database - e.g. !add_player "Mozzo Infame" "12345666" 800 921 ',
+)
+# @has_permission(administrator=True)
 async def add_player(ctx, name, steam_id, elo1v1, elotg):
     flag = Elo.add_player(name=name, steam_id=steam_id, elo_1v1=elo1v1, elo_tg=elotg)
-    if(flag):
+    if flag:
         Elo.update_csv()
         await ctx.send("Player " + name + " added successfully")
     else:
-        await ctx.send("There was an issue adding the player, call Loris and Circe (and check the data format)")
-        
-#---------------------------------------------------------------------
-@bot.command(name='delete_player', help='Deletes a player to the database - e.g. !delete_player "nickname" -  for admin only')
-#@has_permission(administrator=True)
+        await ctx.send(
+            "There was an issue adding the player, call Loris and Circe (and check the data format)"
+        )
+
+
+# ---------------------------------------------------------------------
+@bot.command(
+    name="delete_player",
+    help='Deletes a player to the database - e.g. !delete_player "nickname" -  for admin only',
+)
+# @has_permission(administrator=True)
 async def delete_player(ctx, name, steam_id, elo1v1, elotg):
-    if(Elo.delete_player(name, steam_id, elo1v1, elotg)):
+    if Elo.delete_player(name, steam_id, elo1v1, elotg):
         # TODO: shouldn't this function call Elo.update_csv() as well?
-        await ctx.send("Player "+ name + " deleted successfully")
+        await ctx.send("Player " + name + " deleted successfully")
     else:
         await ctx.send("There was an issue deleting the player, call Loris and Circe")
-  
-#---------------------------------------------------------------------
-@bot.command(name='get_elosRM', help='Gets current elos in RM')
-#@has_permission(administrator=True)
+
+
+# ---------------------------------------------------------------------
+@bot.command(name="get_elosRM", help="Gets current elos in RM")
+# @has_permission(administrator=True)
 async def get_elosRM(ctx, name):
-    await ctx.send(rlk.getElos(Elo.get_steam_id(name)))    
-      
+    await ctx.send(rlk.getElos(Elo.get_steam_id(name)))
+
+
 bot.run(TOKEN)
 
-'''
+"""
 #TODO
 @bot.listen()
 async def on_ready():
@@ -232,4 +280,4 @@ async def auto_update_database():
                         Elo.update_elo(steam_ids[j]), False, int(Elo.compute_elo(int(elos[j]), mean_elo_team1, int(won[j])))
     
     pass
-'''
+"""
