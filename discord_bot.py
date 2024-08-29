@@ -89,7 +89,7 @@ async def balance_lobby(ctx, lobby_id):
         await ctx.send("Check the number of players, it is odd or there are less than 3 players")
     for j, id in enumerate(steam_ids):
         if(Elo.get_name(id)):
-            await ctx.send("The " +str(j)+"-th player is not registered on the database. Please use the !balance_lobby_1v1elo command or add him/her to the database first")
+            await ctx.send("The " +str(j)+"-th player is not registered on the database. Please use the !balance_lobby_1v1 command or add him/her to the database first")
         names.append(Elo.get_name(id))
         
     team = Elo.balance_teams_internal(names)
@@ -104,7 +104,7 @@ async def balance_lobby(ctx, lobby_id):
 
 #---------------------------------------------------------------------
 @bot.command(name='balance_lobby_1v1', help='Balances the teams in the specified lobby empoying the 1v1 RM Elo  - e.g. !balance_lobby_1v1 254830248')
-async def balance_lobby_by1v1(ctx, lobby_id):
+async def balance_lobby_1v1(ctx, lobby_id):
     elos = []
     team_names = []
     team_elos = []
@@ -170,13 +170,15 @@ async def get_elosRM(ctx, name):
       
 bot.run(TOKEN)
 
+
 '''
 #TODO
 @bot.listen()
 async def on_ready():
     task_loop.start()
+'''
 
-
+'''
 @tasks.loop(seconds=4*3600) #four hours seems reasonable
 async def auto_update_database():
 

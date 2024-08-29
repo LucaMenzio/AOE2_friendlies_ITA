@@ -59,9 +59,9 @@ class AOE2ItaliaElo:
     def get_elotg_by_id(self, player_steam_id: int):
         return self._get_record_given_value(player_steam_id, ID, ELO_TG)
 
-    #TODO: not sure what it should return exactly. Compare with previous code. If the same name is written twice, it will fail.
+    #TODO: not sure what it should return exactly. Compare with previous code. If the same name is written twice, it will fail. 
     # returns two teams balanced with respect of the sigle's tg elos
-    def balance_teams_internal(self, team_names: list[str]) -> list:
+    def balance_teams_internal(self, team_names) -> list:
         difference = 1000
 
         # checks to avoid shenanigans
@@ -80,7 +80,7 @@ class AOE2ItaliaElo:
         df = self.df.query(f"{NAME} in {team_names}")
         total_elo = df[ELO_TG].sum()
 
-        for team_a, team_b in list(combinations(df["Names"]), len(df) / 2):
+        for team_a, team_b in list(combinations(df["Names"], len(df) / 2)):
             team_a_elo = df[df[NAME].isin(team_a)][ELO_TG].sum()
             if difference > abs(team_a_elo - total_elo / 2):
                 good_a, good_b = team_a, team_b
