@@ -9,6 +9,8 @@ class relicAPI:
         self.steam_id = [[]]
         self.names = [[]]
         self.results = [[]]
+        #HTTPS verification, does not work with aoe-api.reliclink.com (we should look for alternatives) #TODO
+        self.verification = False
     
     #gives back info regarding a certain match(es) found with some player steam_id
     def getMatches(self, in_steam_id, n_matches):
@@ -18,8 +20,8 @@ class relicAPI:
         steam_id = []
         names = []
         results = []
-        
-        resp_matches = requests.get("https://aoe-api.reliclink.com/community/leaderboard/getRecentMatchHistory?title=age2&profile_names=[%22%2Fsteam%2F"+str(in_steam_id)+"%22]").json()
+        url = "https://aoe-api.reliclink.com/community/leaderboard/getRecentMatchHistory?title=age2&profile_names=[%22%2Fsteam%2F"+str(in_steam_id)+"%22]"
+        resp_matches = requests.get(url, verify=self.verification).json()
 
         for matches_history in resp_matches.get('matchHistoryStats'):
             
@@ -49,7 +51,7 @@ class relicAPI:
         return -1
     
     
-    #TODO
+    #TODO some fixes are needed (interaction with db)
     def getMatches_dito(self, in_steam_id, n_matches, search_string):
         
         a = 0
@@ -66,7 +68,7 @@ class relicAPI:
         all_startimes = []
         
         try:
-            resp_matches = requests.get("https://aoe-api.reliclink.com/community/leaderboard/getRecentMatchHistory?title=age2&profile_names=[%22%2Fsteam%2F"+str(in_steam_id)+"%22]").json()
+            resp_matches = requests.get("https://aoe-api.reliclink.com/community/leaderboard/getRecentMatchHistory?title=age2&profile_names=[%22%2Fsteam%2F"+str(in_steam_id)+"%22]",verify=self.verification).json()
             for matches_history in resp_matches.get('matchHistoryStats'):
                 a +=1
                 if a == n_matches:
@@ -110,7 +112,7 @@ class relicAPI:
     def getElos(self, in_steam_id):
         
         try:
-            resp_profile = requests.get("https://aoe-api.reliclink.com/community/leaderboard/GetPersonalStat?title=age2&profile_names=[%22%2Fsteam%2F" + str(in_steam_id) + "%22]").json()
+            resp_profile = requests.get("https://aoe-api.reliclink.com/community/leaderboard/GetPersonalStat?title=age2&profile_names=[%22%2Fsteam%2F" + str(in_steam_id) + "%22]", verify=self.verification).json()
             #print("gettiong elo of player " + str(resp_profile.get("statGroups")))
 
             a = 0 #used to quit the scrolling after saving 1v1 and tg data
@@ -133,7 +135,7 @@ class relicAPI:
         players_id = []
         steam_id = []
         try:
-            resp_lobby = requests.get("https://aoe-api.reliclink.com/community/advertisement/findAdvertisements?title=age2").json()
+            resp_lobby = requests.get("https://aoe-api.reliclink.com/community/advertisement/findAdvertisements?title=age2",verify=self.verification).json()
             for lobby in resp_lobby.get("matches"):
                 #lobby_title = lobby.get("description")
                 #if (" dito" in lobby_title) or ("dito " lobby_title) or (" DITO" in lobby_title) or "DITO " in lobby_title:
