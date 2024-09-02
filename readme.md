@@ -1,3 +1,7 @@
+# NOT A README
+
+Currently, this is not a readme, but a messy collection of notes about the projects.
+
 # API: getRecentMatchHistory
 
 At the moment, a working API is the following:
