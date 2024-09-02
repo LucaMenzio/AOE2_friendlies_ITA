@@ -12,7 +12,7 @@ It remains unclear whether the search results include private lobbies. Additiona
 
 # How to create the Model of the API result
 
-We can use [datamodel-code-generator](https://koxudaxi.github.io/datamodel-code-generator/) to create a [Pydantic model](https://docs.pydantic.dev/latest/) that can be used to parse the API response correctly. We need the schema of the response of the API (for example [getrecentmatchhistory](https://wiki.librematch.org/rlink/community/leaderboard/getrecentmatchhistory)[^1]). All the schemas and the models will be in the `modules/api/schemas` folder.
+We can use [datamodel-code-generator](https://koxudaxi.github.io/datamodel-code-generator/) to create a [Pydantic model](https://docs.pydantic.dev/latest/) that can be used to parse the API response correctly. We need the schema of the response of the API (for example [getrecentmatchhistory](https://wiki.librematch.org/rlink/community/leaderboard/getrecentmatchhistory)[^1]). All the schemas are in the `modules/api/schemas` folder and the generated models are in `modules/api`.
 
 Create the schemas with
 
