@@ -1,0 +1,259 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "result": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "code",
+                "message"
+            ]
+        },
+        "matchHistoryStats": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "creator_profile_id": {
+                        "type": "integer"
+                    },
+                    "mapname": {
+                        "type": "string"
+                    },
+                    "maxplayers": {
+                        "type": "integer"
+                    },
+                    "matchtype_id": {
+                        "type": "integer"
+                    },
+                    "options": {
+                        "type": "string"
+                    },
+                    "slotinfo": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "startgametime": {
+                        "type": "integer"
+                    },
+                    "completiontime": {
+                        "type": "integer"
+                    },
+                    "observertotal": {
+                        "type": "integer"
+                    },
+                    "matchhistoryreportresults": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "matchhistory_id": {
+                                    "type": "integer"
+                                },
+                                "profile_id": {
+                                    "type": "integer"
+                                },
+                                "resulttype": {
+                                    "type": "integer"
+                                },
+                                "teamid": {
+                                    "type": "integer"
+                                },
+                                "race_id": {
+                                    "type": "integer"
+                                },
+                                "xpgained": {
+                                    "type": "integer"
+                                },
+                                "counters": {
+                                    "type": "string"
+                                },
+                                "matchstartdate": {
+                                    "type": "integer"
+                                }
+                            },
+                            "required": [
+                                "counters",
+                                "matchhistory_id",
+                                "matchstartdate",
+                                "profile_id",
+                                "race_id",
+                                "resulttype",
+                                "teamid",
+                                "xpgained"
+                            ]
+                        }
+                    },
+                    "matchhistoryitems": {
+                        "type": "array"
+                    },
+                    "matchurls": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "profile_id": {
+                                    "type": "integer"
+                                },
+                                "url": {
+                                    "type": "string"
+                                },
+                                "size": {
+                                    "type": "integer"
+                                },
+                                "datatype": {
+                                    "type": "integer"
+                                }
+                            },
+                            "required": [
+                                "datatype",
+                                "profile_id",
+                                "size",
+                                "url"
+                            ]
+                        }
+                    },
+                    "matchhistorymember": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "matchhistory_id": {
+                                    "type": "integer"
+                                },
+                                "profile_id": {
+                                    "type": "integer"
+                                },
+                                "race_id": {
+                                    "type": "integer"
+                                },
+                                "statgroup_id": {
+                                    "type": "integer"
+                                },
+                                "teamid": {
+                                    "type": "integer"
+                                },
+                                "wins": {
+                                    "type": "integer"
+                                },
+                                "losses": {
+                                    "type": "integer"
+                                },
+                                "streak": {
+                                    "type": "integer"
+                                },
+                                "arbitration": {
+                                    "type": "integer"
+                                },
+                                "outcome": {
+                                    "type": "integer"
+                                },
+                                "oldrating": {
+                                    "type": "integer"
+                                },
+                                "newrating": {
+                                    "type": "integer"
+                                },
+                                "reporttype": {
+                                    "type": "integer"
+                                }
+                            },
+                            "required": [
+                                "matchhistory_id",
+                                "profile_id",
+                                "race_id",
+                                "statgroup_id",
+                                "teamid",
+                                "wins",
+                                "losses",
+                                "streak",
+                                "arbitration",
+                                "outcome",
+                                "oldrating",
+                                "newrating",
+                                "reporttype"
+                            ]
+                        }                        
+                    }
+                },
+                "required": [
+                    "completiontime",
+                    "creator_profile_id",
+                    "description",
+                    "id",
+                    "mapname",
+                    "matchhistoryitems",
+                    "matchhistorymember",
+                    "matchhistoryreportresults",
+                    "matchtype_id",
+                    "matchurls",
+                    "maxplayers",
+                    "observertotal",
+                    "options",
+                    "slotinfo",
+                    "startgametime"
+                ]
+            }
+        },
+        "profiles": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "profile_id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "alias": {
+                        "type": "string"
+                    },
+                    "personal_statgroup_id": {
+                        "type": "integer"
+                    },
+                    "xp": {
+                        "type": "integer"
+                    },
+                    "level": {
+                        "type": "integer"
+                    },
+                    "leaderboardregion_id": {
+                        "type": "integer"
+                    },
+                    "country": {
+                        "type": "string"
+                    }
+                },
+                "required": [
+                    "alias",
+                    "country",
+                    "leaderboardregion_id",
+                    "level",
+                    "name",
+                    "personal_statgroup_id",
+                    "profile_id",
+                    "xp"
+                ]
+            }
+        }
+    },
+    "required": [
+        "matchHistoryStats",
+        "profiles",
+        "result"
+    ]
+}

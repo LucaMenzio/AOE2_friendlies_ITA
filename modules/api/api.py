@@ -2,20 +2,15 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any, Self
 
-from pydantic import validate_arguments
-
-from modules.constants import MatchType
+from pydantic import BaseModel
 
 
-@dataclass(frozen=True)
-class ApiResult:
+class ApiResult(BaseModel):
     code: int
     message: str
 
 
-@validate_arguments
-@dataclass(frozen=True)
-class ApiProfile:
+class ApiProfile(BaseModel):
     profile_id: int
     name: str
     alias: str
@@ -26,29 +21,26 @@ class ApiProfile:
     country: str
 
 
-@dataclass(frozen=True)
-class MatchHistoryReportResult:
+class MatchHistoryReportResult(BaseModel):
     matchhistory_id: int
     profile_id: int
     resulttype: int
     teamid: int
     race_id: int
     xpgained: int
-    counters: dict
+    counters: str
     matchstartdate: int
     civilization_id: int
 
 
-@dataclass(frozen=True)
-class Matchurls:
+class Matchurls(BaseModel):
     profile_id: int
     url: str
     size: int
     datatype: int
 
 
-@dataclass(frozen=True)
-class MatchHistoryMember:
+class MatchHistoryMember(BaseModel):
     matchhistory_id: int
     profile_id: int
     race_id: int
@@ -65,14 +57,12 @@ class MatchHistoryMember:
     civilization_id: int
 
 
-@validate_arguments
-@dataclass()
-class matchHistoryElement:
+class matchHistoryElement(BaseModel):
     id: int
     creator_profile_id: int
     mapname: str
     maxplayers: int
-    matchtype_id: MatchType
+    matchtype_id: int
     options: str
     slotinfo: str
     description: str

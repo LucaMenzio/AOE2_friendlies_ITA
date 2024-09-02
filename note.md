@@ -10,6 +10,16 @@ for example
 This api will return information about 'recent' matches of a given Steam ID. It includes for sure Ranked games and Quickplay.
 It remains unclear whether the search results include private lobbies. Additionally, the absence of chronological ordering makes it uncertain if all recent games are displayed.
 
+# How to create the Model of the API result
+
+We can use [datamodel-code-generator](https://koxudaxi.github.io/datamodel-code-generator/) to create a [Pydantic model](https://docs.pydantic.dev/latest/) that can be used to parse the API response correctly. We need the schema[^1] of the response of the API (for example [getrecentmatchhistory](https://wiki.librematch.org/rlink/community/leaderboard/getrecentmatchhistory)). All the schemas and the Model will be in the `modules/api/schemas` folder.
+
+Create the schemas with
+
+```sh
+datamodel-codegen  --input "modules/api/schemas/getRecentMatchHistory.json" --input-file-type jsonschema --output "modules/api/schemas/getRecentMatchHistory.py"
+```
+
 # API response description
 
 A request to the getRecentMatchHistory API, will return a JSON with the following structure:
@@ -86,3 +96,5 @@ This contains a list (an array in JSON) of all the profiles found in matches fro
     "country": "it"
 }
 ```
+
+[^1]: The schema on this page contains a few errors. I fixed them manually (and with ChatGPT)
