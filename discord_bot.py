@@ -6,7 +6,8 @@ from discord.ext import commands, tasks
 import discord
 from dotenv import load_dotenv
 
-from modules import *
+from modules.Elo_csv import AOE2ItaliaElo
+from modules.reliclink_API import relicAPI
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -15,21 +16,22 @@ intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(command_prefix='!', intents=intents)
-Elo = Elo_csv.AOE2ItaliaElo("files/elo_aoe2italia_internal_updated_temp.csv")    
-rlk = reliclink_API.relicAPI()
+Elo = AOE2ItaliaElo("files/elo_aoe2italia_internal_updated_temp.csv")    
+rlk = relicAPI()
 
 
 message = "Please check if the bot command is used correctly"
 
 #---------------------------------------------------------------------
 @bot.command(name='elo1v1', help='Retrieves the 1v1 elo of the specified player name (please use "")')
-async def create_team(ctx, player):
+async def elo1v1(ctx, player):
     elo = Elo.get_elo1v1(player)
+    print("CIAO")
     await ctx.send(f"{player}: {elo} (1v1)")
 
 #---------------------------------------------------------------------
 @bot.command(name='elotg', help='Retrieves the tg elo of the specified player name (please use "")')
-async def create_team(ctx, player):
+async def elotg(ctx, player):
     elo = Elo.get_elotg(player)
     if player == "HSL | Loris":
         message = "Il capo non ha Elo, ma l\'Elo ha un capo (scarso, comunque)"
@@ -52,7 +54,7 @@ async def create_team(ctx, *players):
     
 #---------------------------------------------------------------------
 @bot.command(name='get_matchinfo', help='Retrieves the info about the last match played by the specified player')
-async def create_team(ctx, player, n_games):
+async def get_matchinfo(ctx, player, n_games):
 
     steam_ids = []
     results = []
@@ -88,8 +90,8 @@ async def balance_lobby(ctx, lobby_id):
     if(len(steam_ids) < 4 or len(steam_ids) %2 != 0):
         await ctx.send("Check the number of players, it is odd or there are less than 3 players")
     for j, id in enumerate(steam_ids):
-        if(Elo.get_name(id)):
-            await ctx.send("The " +str(j)+"-th player is not registered on the database. Please use the !balance_lobby_1v1 command or add him/her to the database first")
+        if(Elo.get_name(id) == -1):
+            await ctx.send(f"The {j}-th player with Steam ID {id} is not registered on the database. Please use the !balance_lobby_1v1elo command or add them to the database first")
         names.append(Elo.get_name(id))
         
     team = Elo.balance_teams_internal(names)
@@ -124,11 +126,10 @@ async def balance_lobby_1v1(ctx, lobby_id):
         else:
             message = ""
             for i in range(len(team_elos)):
-            # TODO: I think the new Elo.balance_teams is not compatible with this, 
-            # because it reorders the players' Elo
-                message += team_names[i] + "\t" + teams[i] + "\n"
-            await ctx.send("The most balanced combination is:\n")
-            await ctx.send(message)
+                message = "The best combination of players is \n" 
+                message += f"Team 0: {teams[0]}\n"
+                message += f"Team 1: {teams[1]}"
+                await ctx.send(message)
 
 #---------------------------------------------------------------------
 @bot.command(name='print_csv', help='Shows the database (csv) - for admin only')

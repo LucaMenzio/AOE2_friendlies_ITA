@@ -5,7 +5,7 @@ from rlink_client.apis.tags import default_api
 # Defining the host is optional and defaults to https://aoe-api.reliclink.com
 # See configuration.py for a list of all supported configuration parameters.
 configuration = rlink_client.Configuration(
-    host = "https://aoe-api.reliclink.com"
+    host = "https://aoe-api.worldsedgelink.com"
 )
 
 
@@ -19,11 +19,12 @@ with rlink_client.ApiClient(configuration) as api_client:
     try:
         #query_params = {'title': title, 'profile_names': "[%22/steam/" + str(profile_id) + "%22]"}
         query_params = {
-        'title': "[\"age2\"]",
-        'profile_names': "[%22/steam/76561199211278142%22]",
+        'title': "age2",
+        'profile_names': "[\"/steam/76561198342887481\"]",
         }
         api_response = api_instance.community_get_recent_match_history(query_params=query_params)
+        api_instance.community_get_available_leaderboards({'title': "age2"})
         pprint(api_response)
-        #print(str(list(api_response.body['matchHistoryStats'])[0]['id']))
+        print(str(list(api_response.body['matchHistoryStats'])[0]['id']))
     except rlink_client.ApiException as e:
         print("Exception when calling DefaultApi->community_get_recent_match_history: %s\n" % e)

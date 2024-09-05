@@ -12,7 +12,8 @@ class relicAPI:
         #HTTPS verification, does not work with aoe-api.reliclink.com (we should look for alternatives) #TODO
         self.verification = False
     
-    #gives back info regarding a certain match(es) found with some player steam_id
+    # This only return "n_matches" matches, but they are not sorted by dates. Is that okay?
+    # gives back info regarding a certain match(es) found with some player steam_id
     def getMatches(self, in_steam_id, n_matches):
         
         a = 0

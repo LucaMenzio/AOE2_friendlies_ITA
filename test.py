@@ -1,4 +1,6 @@
-from modules import *
+from modules.Elo_csv import AOE2ItaliaElo
+from modules.reliclink_API import relicAPI
+import requests
 
 #a = Elo.AOE2ItaliaElo()
 
