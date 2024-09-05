@@ -102,3 +102,10 @@ This contains a list (an array in JSON) of all the profiles found in matches fro
 ```
 
 [^1]: The schema on this page contains a few errors. I fixed them manually (and with ChatGPT)
+
+## List of API endpoints
+
+| **name** |  **content** |    **link**                   |
+|:----------------:|-----------------------|-----------------------|
+| getRecentMatchHistory                | Return list of *recent* matches of a given player   | [Libre-match wiki](https://wiki.librematch.org/rlink/community/leaderboard/getrecentmatchhistory)        |
+| getavailableleaderboards              | Return list of IDs of Match Type and Civs         | [Libre-match wiki](https://wiki.librematch.org/rlink/community/leaderboard/getavailableleaderboards)        |

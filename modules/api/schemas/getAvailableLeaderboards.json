@@ -1,0 +1,149 @@
+{
+    "$schema": "http://json-schema.org/schema#",
+    "type": "object",
+    "properties": {
+        "result": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "code",
+                "message"
+            ]
+        },
+        "leaderboards": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "isranked": {
+                        "type": "integer"
+                    },
+                    "leaderboardmap": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "matchtype_id": {
+                                    "type": "integer"
+                                },
+                                "statgroup_type": {
+                                    "type": "integer"
+                                },
+                                "race_id": {
+                                    "type": "integer"
+                                }
+                            },
+                            "required": [
+                                "matchtype_id",
+                                "race_id",
+                                "statgroup_type"
+                            ]
+                        }
+                    }
+                },
+                "required": [
+                    "id",
+                    "isranked",
+                    "leaderboardmap",
+                    "name"
+                ]
+            }
+        },
+        "matchTypes": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "locstringid": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "id",
+                    "locstringid",
+                    "name"
+                ]
+            }
+        },
+        "races": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "faction_id": {
+                        "type": "integer"
+                    },
+                    "locstringid": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "faction_id",
+                    "id",
+                    "locstringid",
+                    "name"
+                ]
+            }
+        },
+        "factions": {
+            "type": "array",
+            "items": {}
+            
+        },
+        "leaderboardRegions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "locstringid": {
+                        "type": "integer"
+                    }
+                },
+                "required": [
+                    "id",
+                    "locstringid",
+                    "name"
+                ]
+            }
+        }
+    },
+    "required": [
+        "factions",
+        "leaderboardRegions",
+        "leaderboards",
+        "matchTypes",
+        "races",
+        "result"
+    ]
+}
