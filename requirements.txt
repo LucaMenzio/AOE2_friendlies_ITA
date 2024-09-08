@@ -7,3 +7,4 @@ pytest
 requests==2.31.0
 pydantic
 datamodel-code-generator
+uproot
