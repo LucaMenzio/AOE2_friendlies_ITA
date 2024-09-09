@@ -5,5 +5,6 @@ python-dotenv==1.0.0
 PyYAML
 pytest
 requests==2.31.0
+jupyter
 pydantic
 datamodel-code-generator
