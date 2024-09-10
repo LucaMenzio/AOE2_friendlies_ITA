@@ -2,7 +2,6 @@ env/
 .env
 __pycache__
 *.csv
-
+*.root
 .idea*
-
 .vscode/

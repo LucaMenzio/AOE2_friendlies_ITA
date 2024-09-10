@@ -33,8 +33,6 @@ ELO_TG = "Elo tg"
 CSV_NAME = "files/elo_aoe2italia_internal.csv"
 
 # Name of the rootfile
-ROOTFILE_NAME = "DB_Aoe2Italia.root"
+PLAYERS_JSON_FILE_NAME = "files/Players_Aoe2Italia.json"
+MATCHES_JSON_FILE_NAME = "files/Matches_Aoe2Italia.json"
 
-# Names of the trees inside the rootfile
-PLAYERS_TREE = "Players"
-GAMES_TREE = "Games"
