@@ -82,6 +82,18 @@ class Profile(BaseModel):
     leaderboardregion_id: int
     country: str
 
+    def __post_init__(self) -> None:
+        self.steam_id = self._get_steam_id(self.name)
+
+    def _get_steam_id(self, name: str) -> str:
+        """
+        From the available API, "name" is f"/steam/{STEAM_ID}"
+
+        Returns:
+            str: given "name" from the API, it returns STEAM_ID
+        """
+        return name.split("/")[-1]
+
 
 class getRecentMatchHistory(BaseModel):
     result: Result

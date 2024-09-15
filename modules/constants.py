@@ -24,3 +24,6 @@ NICK = "Discord Nick"
 STEAM_ID = "Steam ID"
 ELO = "Elo 1v1"
 ELO_TG = "Elo tg"
+
+
+API_MAX_CALLS_PER_SECOND = 50
