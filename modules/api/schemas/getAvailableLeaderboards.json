@@ -42,13 +42,13 @@
                                 "statgroup_type": {
                                     "type": "integer"
                                 },
-                                "race_id": {
+                                "civilization_id": {
                                     "type": "integer"
                                 }
                             },
                             "required": [
                                 "matchtype_id",
-                                "race_id",
+                                "civilization_id",
                                 "statgroup_type"
                             ]
                         }

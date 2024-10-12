@@ -72,7 +72,7 @@
                                 "teamid": {
                                     "type": "integer"
                                 },
-                                "race_id": {
+                                "civilization_id": {
                                     "type": "integer"
                                 },
                                 "xpgained": {
@@ -90,7 +90,7 @@
                                 "matchhistory_id",
                                 "matchstartdate",
                                 "profile_id",
-                                "race_id",
+                                "civilization_id",
                                 "resulttype",
                                 "teamid",
                                 "xpgained"
@@ -137,7 +137,7 @@
                                 "profile_id": {
                                     "type": "integer"
                                 },
-                                "race_id": {
+                                "civilization_id": {
                                     "type": "integer"
                                 },
                                 "statgroup_id": {
@@ -174,7 +174,7 @@
                             "required": [
                                 "matchhistory_id",
                                 "profile_id",
-                                "race_id",
+                                "civilization_id",
                                 "statgroup_id",
                                 "teamid",
                                 "wins",

@@ -25,7 +25,7 @@ class Matchhistoryreportresult(BaseModel):
     profile_id: int
     resulttype: int
     teamid: int
-    race_id: int
+    civilization_id: int
     xpgained: int
     counters: str
     matchstartdate: int
@@ -41,7 +41,7 @@ class Matchurl(BaseModel):
 class MatchhistorymemberItem(BaseModel):
     matchhistory_id: int
     profile_id: int
-    race_id: int
+    civilization_id: int
     statgroup_id: int
     teamid: int
     wins: int

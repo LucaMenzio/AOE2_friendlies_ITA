@@ -22,7 +22,7 @@ class Result(BaseModel):
 class LeaderboardmapItem(BaseModel):
     matchtype_id: int
     statgroup_type: int
-    race_id: int
+    civilization_id: int
 
 
 class Leaderboard(BaseModel):
